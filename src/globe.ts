@@ -275,6 +275,9 @@ export class Globe {
 
   /** Highlight what was going down at t million years ago; null shows everything. */
   setTime(t: number | null) {
+    // today's earthquakes and plates say nothing about the past: fade them while looking back in time
+    for (const m of this.quakeMaterials) m.uniforms.alpha.value = t == null ? 0.85 : 0.12;
+    this.groups.get('plates')?.traverse((o) => { if ((o as THREE.Mesh).isMesh) ((o as THREE.Mesh).material as THREE.MeshStandardMaterial).opacity = t == null ? 0.82 : 0.15; });
     for (const m of this.slabMarkers) {
       const on = t == null || sinkingAt(m.slab, t);
       (m.mesh.material as THREE.MeshBasicMaterial).opacity = on ? 0.95 : 0.12;
@@ -306,8 +309,9 @@ export class Globe {
     const lo = (s.mid[0] * Math.PI) / 180;
     const east = new THREE.Vector3(Math.cos(lo), 0, -Math.sin(lo));
     const up = mid.clone().normalize();
-    const target = mid.clone().multiplyScalar(0.55);
-    const cam = target.clone().add(east.multiplyScalar(cut ? 2.6 : 1.6)).add(up.multiplyScalar(cut ? 0.5 : 1.2));
+    // frame the slab with the surface above it: aim a little below its middle, from about 1.5 Earth radii away
+    const target = mid.clone().multiplyScalar(Math.max(0.6, 0.97 - s.mid[2] / 6371));
+    const cam = target.clone().add(east.multiplyScalar(cut ? 1.5 : 1.6)).add(up.multiplyScalar(cut ? 0.35 : 1.2));
     this.flyTo(cam, target);
   }
 

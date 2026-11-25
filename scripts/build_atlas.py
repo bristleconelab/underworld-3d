@@ -30,7 +30,8 @@ COLS = ["nr", "name", "abbr", "updated", "mid_depth", "mid_lon", "mid_lat", "geo
 def nice_name(s: str) -> str:
     """'AlJawf' -> 'Al Jawf', 'Aeg-WestAnatolia' -> 'Aegean-West Anatolia' stays readable; keep hyphens."""
     s = re.sub(r"(?<=[a-z])(?=[A-Z])", " ", s.strip())
-    return s.replace("Aeg-", "Aegean-")
+    s = s.replace("Aeg-", "Aegean-")
+    return {"Juande Fuca": "Juan de Fuca"}.get(s, s)
 
 
 # a few ages are given as periods; ICS International Chronostratigraphic Chart v2023/09 boundaries (Ma)

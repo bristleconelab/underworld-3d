@@ -31,6 +31,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .masthead { position: fixed; top: 18px; left: 22px; z-index: 3; pointer-events: none; }
 .masthead h1 { margin: 0; font-size: 44px; line-height: 0.95; font-weight: 800; letter-spacing: -0.035em; font-variation-settings: 'wdth' 75, 'opsz' 96; }
 .masthead p { margin: 6px 0 0; color: var(--muted); max-width: 30ch; }
+.highlights { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; max-width: 340px; pointer-events: auto; }
+.highlights .fine { margin-right: 2px; }
+.chip { border: 1px solid var(--line); background: rgb(21 26 44 / 0.75); border-radius: 14px; padding: 4px 11px; font-size: 13px; }
+.chip:hover { border-color: var(--magma); }
+.lead { margin: 0 0 12px; padding-left: 12px; border-left: 3px solid var(--magma); font-size: 15px; }
+.next { display: block; margin-top: 6px; }
 
 .controls { position: fixed; left: 18px; bottom: 18px; z-index: 3; width: 270px; padding: 14px 16px; border-radius: 16px; background: rgb(21 26 44 / 0.82); border: 1px solid var(--line); backdrop-filter: blur(8px); }
 .xray { display: grid; gap: 4px; margin-bottom: 10px; font-weight: 600; }
@@ -85,12 +91,20 @@ dialog p, dialog li { max-width: 68ch; }
 #list-sunk .nm::before { background: var(--sunk); }
 
 @media (max-width: 900px) {
-  .masthead h1 { font-size: 34px; }
+  .masthead { left: 14px; top: 12px; right: 170px; }
+  .masthead h1 { font-size: 28px; }
+  .corner { top: 12px; right: 12px; }
+  .corner .btn { padding: 7px 12px; font-size: 13.5px; }
+  .highlights { max-width: none; margin-top: 8px; }
+  .chip { font-size: 12.5px; padding: 3px 9px; }
+  #panel { background: var(--night-2); }
+  body.panel-open .controls, body.panel-open .timebar, body.panel-open .highlights, body.panel-open #hint { display: none; }
   .masthead p { display: none; }
   .controls { width: auto; right: 18px; bottom: 112px; padding: 10px 12px; }
   .toggles { grid-template-columns: 1fr 1fr; font-size: 12.5px; }
   .timebar { width: auto; left: 18px; right: 18px; transform: none; min-width: 0; }
-  #panel { top: auto; bottom: 0; right: 0; left: 0; width: auto; max-height: 60vh; border-radius: 18px 18px 0 0; }
+  #panel { top: auto; bottom: 0; right: 0; left: 0; width: auto; max-height: 58vh; border-radius: 18px 18px 0 0; }
+  .arc-label { font-size: 10.5px; }
   #hint { top: auto; bottom: 330px; width: max-content; max-width: calc(100vw - 32px); text-align: center; }
   .list-cols { grid-template-columns: 1fr; }
 }

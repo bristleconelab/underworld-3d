@@ -3,6 +3,7 @@ import '@fontsource-variable/source-serif-4';
 import './styles.css';
 import { decodeQuakes, fmt, isActive, rateWords, sinkingAt, sinkingStory, type Slab } from './earth';
 import { Globe, type LayerName } from './globe';
+import { HIGHLIGHTS } from './tour';
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector(s) as T;
 const base = import.meta.env.BASE_URL;
@@ -20,6 +21,7 @@ async function load() {
   globe.setQuakes(decodeQuakes(qb));
   globe.setSlabs(slabs);
   buildList();
+  buildHighlights();
   applyHash();
   // Slab2 plates are optional: the site works without them
   try {
@@ -60,15 +62,37 @@ timeReset.addEventListener('click', () => { time.value = '0'; applyTime(); });
 const panel = $('#panel'), body = $('#panel .panel-body');
 const el = (tag: string, cls: string, text?: string) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
+function buildHighlights() {
+  const nav = $('.highlights');
+  for (const hl of HIGHLIGHTS) {
+    const s = slabs.find((x) => x.abbr === hl.abbr);
+    if (!s) continue;
+    const b = el('button', 'chip', hl.title) as HTMLButtonElement;
+    b.addEventListener('click', () => showSlab(s));
+    nav.append(b);
+  }
+}
+
 function showSlab(s: Slab | null) {
   globe.select(s);
-  if (!s) { panel.hidden = true; globe.setViewShift(0); history.replaceState(null, '', location.pathname); return; }
+  if (!s) { panel.hidden = true; document.body.classList.remove('panel-open'); globe.setViewShift(0); history.replaceState(null, '', location.pathname); return; }
   globe.setViewShift(matchMedia('(min-width: 901px)').matches ? 190 : 0);
+  document.body.classList.add('panel-open');
   hint.hidden = true;
   history.replaceState(null, '', `#slab=${encodeURIComponent(s.abbr)}`);
   body.replaceChildren();
   const active = isActive(s);
   body.append(el('p', `badge ${active ? 'active' : 'sunk'}`, active ? 'Still sinking' : 'Gone down'), el('h2', '', s.name));
+  const hi = HIGHLIGHTS.findIndex((x) => x.abbr === s.abbr);
+  if (hi >= 0) {
+    body.append(el('p', 'lead', HIGHLIGHTS[hi].line));
+    const next = HIGHLIGHTS.slice(hi + 1).concat(HIGHLIGHTS.slice(0, hi)).map((x) => slabs.find((y) => y.abbr === x.abbr)).find(Boolean);
+    if (next) {
+      const nb = el('button', 'link next', `Next highlight: ${HIGHLIGHTS.find((x) => x.abbr === next.abbr)!.title}`) as HTMLButtonElement;
+      nb.addEventListener('click', () => showSlab(next));
+      setTimeout(() => body.append(nb));
+    }
+  }
   const story = el('p', 'story');
   const depthTxt = s.top[0] === 0 ? `Today it reaches from the trench down to about ${fmt(s.base[0])} km` : `Today it lies between about ${fmt(s.top[0])} and ${fmt(s.base[0])} km down`;
   const rate = rateWords(s.rate[0]);
