@@ -56,19 +56,20 @@ export interface Slab {
   name: string;
   abbr: string;
   mid: [number, number, number];        // lon, lat, depth km of the slab's middle
-  surface: [number, number];            // lon, lat of the geological record where it went down
+  surface: [number, number] | null;     // lon, lat of the geological record where it went down (null: none known)
   top: [number, number];                // depth km, error
   base: [number, number];
-  ageBase: [number, number];            // Ma, min-max: when its deepest part went down
-  ageTop: [number, number];             // Ma, min-max: when its shallowest part went down (0 = still going down)
+  ageBase: [number, number] | null;     // Ma, min-max: when its deepest part went down (null: not estimated)
+  ageTop: [number, number] | null;      // Ma, min-max: when its shallowest part went down (0 = still going down)
   rate: [number | null, number | null]; // mm/yr
   ageNote?: string;
 }
 
-export const isActive = (s: Slab) => s.top[0] === 0 && s.ageTop[1] === 0;
+export const isActive = (s: Slab) => s.top[0] === 0 && s.ageTop?.[1] === 0;
 
 /** "between 120 and 100 million years ago" / "since about 50 million years ago, and still going". */
 export function sinkingStory(s: Slab): string {
+  if (!s.ageBase || !s.ageTop) return 'The Atlas gives no estimate of when it went down.';
   const old = Math.round(s.ageBase[1] ?? s.ageBase[0]);
   const young = Math.round(s.ageTop[0] ?? 0);
   if (isActive(s)) return `It has been going down since about ${fmt(old)} million years ago, and still is.`;
@@ -78,6 +79,7 @@ export function sinkingStory(s: Slab): string {
 
 /** Is any part of the slab going down at time t (Ma)? */
 export function sinkingAt(s: Slab, t: number): boolean {
+  if (!s.ageBase || !s.ageTop) return false;
   const oldest = Math.max(s.ageBase[0] ?? 0, s.ageBase[1] ?? 0);
   const youngest = Math.min(s.ageTop[0] ?? 0, s.ageTop[1] ?? 0);
   return t <= oldest && t >= youngest;

@@ -17,7 +17,10 @@ describe('slabs.json (Atlas of the Underworld)', () => {
       expect(s.mid[2]).toBeGreaterThanOrEqual(s.top[0]);
       expect(s.mid[2]).toBeLessThanOrEqual(s.base[0]);
       expect(Math.abs(s.mid[1])).toBeLessThanOrEqual(90);
-      expect(s.ageBase[1]).toBeGreaterThanOrEqual(s.ageTop[0]);
+      if (s.ageBase && s.ageTop) expect(s.ageBase[1]).toBeGreaterThanOrEqual(s.ageTop[0]);
+      // 9999 is the table's "not estimated": it must become null, never a 9,999-million-year age or a 9999° position
+      for (const v of [...s.mid, ...(s.surface ?? []), ...s.top, ...s.base, ...(s.ageBase ?? []), ...(s.ageTop ?? []), ...s.rate]) expect(v ?? 0, s.abbr).toBeLessThan(9999);
+      for (const v of [...(s.ageBase ?? []), ...(s.ageTop ?? [])]) expect(v, s.abbr).toBeLessThanOrEqual(4540); // the age of the Earth
     }
     expect(new Set(slabs.map((s) => s.abbr)).size).toBe(slabs.length); // abbreviations are the deep-link keys
   });

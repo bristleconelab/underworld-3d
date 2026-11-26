@@ -101,13 +101,17 @@ function showSlab(s: Slab | null) {
   const dl = el('dl', 'facts');
   const row = (k: string, v: string) => dl.append(el('dt', '', k), el('dd', '', v));
   row('Depth today', `${fmt(s.top[0])}–${fmt(s.base[0])} km (±${fmt(Math.max(s.top[1], s.base[1]))})`);
-  row('Went down', active ? `since ${fmt(Math.round(s.ageBase[1]))} million years ago` : `${fmt(Math.round(s.ageBase[1]))}–${fmt(Math.round(s.ageTop[0]))} million years ago`);
-  row('Where it went down', place(s.surface[1], s.surface[0]));
+  row('Went down', !s.ageBase || !s.ageTop ? 'not estimated' : active ? `since ${fmt(Math.round(s.ageBase[1]))} million years ago` : `${fmt(Math.round(s.ageBase[1]))}–${fmt(Math.round(s.ageTop[0]))} million years ago`);
+  row('Where it went down', s.surface ? place(s.surface[1], s.surface[0]) : 'not known');
   body.append(dl);
   if (s.ageNote) body.append(el('p', 'fine', `Ages were given as geological periods (${s.ageNote.replace('ages given as ', '').replace(' in the source', '')}); shown here as their span in years.`));
-  const go = el('button', 'btn small', 'Show where it went down') as HTMLButtonElement;
-  go.addEventListener('click', () => globe.flyTowards(s.surface[0], s.surface[1], 2.2));
-  body.append(go, el('p', 'fine', 'From the Atlas of the Underworld (van der Meer et al. 2018, CC BY 4.0). Depths ±100–200 km, ages ± a few million years.'));
+  const surface = s.surface;
+  if (surface) {
+    const go = el('button', 'btn small', 'Show where it went down') as HTMLButtonElement;
+    go.addEventListener('click', () => globe.flyTowards(surface[0], surface[1], 2.2));
+    body.append(go);
+  }
+  body.append(el('p', 'fine', 'From the Atlas of the Underworld (van der Meer et al. 2018, CC BY 4.0). Depths ±100–200 km, ages ± a few million years.'));
   panel.hidden = false;
   panel.querySelector<HTMLElement>('.panel-body')!.scrollTop = 0;
 }
