@@ -1,195 +1,479 @@
 {
 "source": "Hayes, G., 2018, Slab2 - A Comprehensive Subduction Zone Geometry Model: U.S. Geological Survey data release, https://doi.org/10.5066/F7PV6JNV (CC0 / US public domain)",
+"sourceSha256": "6bfdcf92e44e3e134ebacf6833f6d377b910c8cf8a46e65fe56c520f09f13275",
 "stepDeg": 0.2,
+"layout": "f32 xyz*nv | f32 depth_km*nv | f32 dip_deg*nv | f32 dipAz_deg*nv (-1 = undefined) | u32 tri*nt*3",
 "zones": [
 {
 "name": "Alaska",
 "file": "alaska.bin",
 "nv": 4393,
-"nt": 8010,
-"maxDepthKm": 262
+"nt": 8201,
+"maxDepthKm": 262,
+"dipMedianDeg": 15.7
 },
 {
 "name": "Calabria",
 "file": "calabria.bin",
 "nv": 611,
-"nt": 1090,
-"maxDepthKm": 480
+"nt": 1130,
+"maxDepthKm": 480,
+"dipMedianDeg": 17.8
 },
 {
 "name": "Caribbean",
 "file": "caribbean.bin",
 "nv": 1333,
-"nt": 2412,
-"maxDepthKm": 180
+"nt": 2466,
+"maxDepthKm": 180,
+"dipMedianDeg": 15.2
 },
 {
 "name": "Cascadia",
 "file": "cascadia.bin",
 "nv": 1669,
-"nt": 3108,
-"maxDepthKm": 430
+"nt": 3164,
+"maxDepthKm": 430,
+"dipMedianDeg": 27.0
 },
 {
 "name": "Central America",
 "file": "central-america.bin",
 "nv": 1924,
-"nt": 3462,
-"maxDepthKm": 382
+"nt": 3587,
+"maxDepthKm": 382,
+"dipMedianDeg": 26.6
 },
 {
 "name": "Cotabato",
 "file": "cotabato.bin",
 "nv": 95,
-"nt": 142,
-"maxDepthKm": 140
+"nt": 155,
+"maxDepthKm": 140,
+"dipMedianDeg": 34.7
 },
 {
 "name": "Halmahera",
 "file": "halmahera.bin",
 "nv": 1409,
-"nt": 2592,
-"maxDepthKm": 676
+"nt": 2652,
+"maxDepthKm": 676,
+"dipMedianDeg": 49.3
 },
 {
 "name": "Hellenic Arc",
 "file": "hellenic-arc.bin",
 "nv": 1946,
-"nt": 3606,
-"maxDepthKm": 444
+"nt": 3697,
+"maxDepthKm": 444,
+"dipMedianDeg": 14.2
 },
 {
 "name": "Himalaya",
 "file": "himalaya.bin",
 "nv": 737,
-"nt": 1222,
-"maxDepthKm": 40
+"nt": 1291,
+"maxDepthKm": 40,
+"dipMedianDeg": 10.0
 },
 {
 "name": "Hindu Kush",
 "file": "hindu-kush.bin",
 "nv": 109,
-"nt": 166,
-"maxDepthKm": 332
+"nt": 178,
+"maxDepthKm": 332,
+"dipMedianDeg": 60.3
 },
 {
 "name": "Izu-Bonin",
 "file": "izu-bonin.bin",
 "nv": 2538,
-"nt": 4654,
-"maxDepthKm": 577
+"nt": 4764,
+"maxDepthKm": 577,
+"dipMedianDeg": 36.8
 },
 {
 "name": "Kamchatka-Kuril Islands-Japan",
 "file": "kamchatka-kuril-islands-japan.bin",
 "nv": 7498,
-"nt": 14416,
-"maxDepthKm": 661
+"nt": 14594,
+"maxDepthKm": 661,
+"dipMedianDeg": 29.7
 },
 {
 "name": "Kermadec",
 "file": "kermadec.bin",
 "nv": 4346,
-"nt": 8174,
-"maxDepthKm": 700
+"nt": 8322,
+"maxDepthKm": 700,
+"dipMedianDeg": 39.9
 },
 {
 "name": "Makran",
 "file": "makran.bin",
 "nv": 1448,
-"nt": 2714,
-"maxDepthKm": 156
+"nt": 2738,
+"maxDepthKm": 156,
+"dipMedianDeg": 9.0
 },
 {
 "name": "Manila Trench",
 "file": "manila-trench.bin",
 "nv": 489,
-"nt": 848,
-"maxDepthKm": 170
+"nt": 869,
+"maxDepthKm": 170,
+"dipMedianDeg": 34.7
 },
 {
 "name": "Muertos Trough",
 "file": "muertos-trough.bin",
 "nv": 144,
-"nt": 212,
-"maxDepthKm": 99
+"nt": 220,
+"maxDepthKm": 99,
+"dipMedianDeg": 38.6
 },
 {
 "name": "New Guinea",
 "file": "new-guinea.bin",
 "nv": 961,
-"nt": 1758,
-"maxDepthKm": 168
+"nt": 1805,
+"maxDepthKm": 168,
+"dipMedianDeg": 11.4
 },
 {
 "name": "Pamir",
 "file": "pamir.bin",
 "nv": 236,
-"nt": 396,
-"maxDepthKm": 233
+"nt": 409,
+"maxDepthKm": 233,
+"dipMedianDeg": 39.5
 },
 {
 "name": "Philippines",
 "file": "philippines.bin",
 "nv": 537,
-"nt": 836,
-"maxDepthKm": 228
+"nt": 896,
+"maxDepthKm": 228,
+"dipMedianDeg": 41.6
 },
 {
 "name": "Puysegur",
 "file": "puysegur.bin",
 "nv": 189,
-"nt": 278,
-"maxDepthKm": 157
+"nt": 312,
+"maxDepthKm": 157,
+"dipMedianDeg": 47.9
 },
 {
 "name": "Ryukyu",
 "file": "ryukyu.bin",
 "nv": 2099,
-"nt": 3862,
-"maxDepthKm": 393
+"nt": 3976,
+"maxDepthKm": 393,
+"dipMedianDeg": 30.4
 },
 {
 "name": "Scotia Sea",
 "file": "scotia-sea.bin",
 "nv": 540,
-"nt": 946,
-"maxDepthKm": 300
+"nt": 985,
+"maxDepthKm": 300,
+"dipMedianDeg": 51.5
 },
 {
 "name": "Solomon Islands",
 "file": "solomon-islands.bin",
 "nv": 1153,
-"nt": 1958,
-"maxDepthKm": 575
+"nt": 2074,
+"maxDepthKm": 575,
+"dipMedianDeg": 39.0
 },
 {
 "name": "South America",
 "file": "south-america.bin",
 "nv": 12901,
-"nt": 24926,
-"maxDepthKm": 669
+"nt": 25144,
+"maxDepthKm": 669,
+"dipMedianDeg": 26.5
 },
 {
 "name": "Sulawesi",
 "file": "sulawesi.bin",
 "nv": 282,
-"nt": 478,
-"maxDepthKm": 253
+"nt": 499,
+"maxDepthKm": 253,
+"dipMedianDeg": 25.6
 },
 {
 "name": "Sumatra-Java",
 "file": "sumatra-java.bin",
 "nv": 7228,
-"nt": 13546,
-"maxDepthKm": 671
+"nt": 13795,
+"maxDepthKm": 671,
+"dipMedianDeg": 28.0
 },
 {
 "name": "Vanuatu",
 "file": "vanuatu.bin",
 "nv": 829,
-"nt": 1430,
-"maxDepthKm": 339
+"nt": 1495,
+"maxDepthKm": 339,
+"dipMedianDeg": 47.5
 }
-]
+],
+"atlas": {
+"Aeg": {
+"zone": "Hellenic Arc",
+"distKm": 11,
+"dipAz": 24.4,
+"azConsistency": 0.81
+},
+"Aeg-WA": {
+"zone": "Hellenic Arc",
+"distKm": 0,
+"dipAz": 358.2,
+"azConsistency": 0.84
+},
+"Agt": {
+"zone": "Alaska",
+"distKm": 269,
+"dipAz": 34.0,
+"azConsistency": 0.99
+},
+"Al": {
+"zone": "Alaska",
+"distKm": 0,
+"dipAz": 349.9,
+"azConsistency": 0.98
+},
+"Anh": {
+"zone": "Ryukyu",
+"distKm": 240,
+"dipAz": 39.7,
+"azConsistency": 0.95
+},
+"Ant": {
+"zone": "Hellenic Arc",
+"distKm": 0,
+"dipAz": 356.1,
+"azConsistency": 0.85
+},
+"Af": {
+"zone": "New Guinea",
+"distKm": 0,
+"dipAz": 197.7,
+"azConsistency": 0.99
+},
+"Bn": {
+"zone": "Sumatra-Java",
+"distKm": 0,
+"dipAz": 278.6,
+"azConsistency": 0.55
+},
+"BS": {
+"zone": "Alaska",
+"distKm": 156,
+"dipAz": 4.4,
+"azConsistency": 0.98
+},
+"Bi": {
+"zone": "Hellenic Arc",
+"distKm": 223,
+"dipAz": 329.9,
+"azConsistency": 0.93
+},
+"Btr": {
+"zone": "Cascadia",
+"distKm": 0,
+"dipAz": 77.5,
+"azConsistency": 0.93
+},
+"Br": {
+"zone": "South America",
+"distKm": 0,
+"dipAz": 53.5,
+"azConsistency": 0.89
+},
+"Bur": {
+"zone": "Sumatra-Java",
+"distKm": 0,
+"dipAz": 87.3,
+"azConsistency": 0.94
+},
+"Cl": {
+"zone": "Calabria",
+"distKm": 0,
+"dipAz": 283.1,
+"azConsistency": 0.73
+},
+"Ca": {
+"zone": "Caribbean",
+"distKm": 0,
+"dipAz": 271.9,
+"azConsistency": 0.91
+},
+"Co": {
+"zone": "Central America",
+"distKm": 0,
+"dipAz": 19.0,
+"azConsistency": 0.93
+},
+"Cy": {
+"zone": "Hellenic Arc",
+"distKm": 0,
+"dipAz": 355.1,
+"azConsistency": 0.84
+},
+"GB": {
+"zone": "Cascadia",
+"distKm": 119,
+"dipAz": 88.7,
+"azConsistency": 0.98
+},
+"Hm": {
+"zone": "Halmahera",
+"distKm": 11,
+"dipAz": 107.8,
+"azConsistency": 0.14
+},
+"Hi": {
+"zone": "Himalaya",
+"distKm": 0,
+"dipAz": 29.0,
+"azConsistency": 0.94
+},
+"HK": {
+"zone": "Hindu Kush",
+"distKm": 186,
+"dipAz": 340.8,
+"azConsistency": 0.79
+},
+"IB": {
+"zone": "Izu-Bonin",
+"distKm": 15,
+"dipAz": 256.6,
+"azConsistency": 0.98
+},
+"JdF": {
+"zone": "Cascadia",
+"distKm": 0,
+"dipAz": 81.6,
+"azConsistency": 0.94
+},
+"Kc": {
+"zone": "Kamchatka-Kuril Islands-Japan",
+"distKm": 0,
+"dipAz": 303.2,
+"azConsistency": 0.99
+},
+"Mc": {
+"zone": "Kamchatka-Kuril Islands-Japan",
+"distKm": 0,
+"dipAz": 280.0,
+"azConsistency": 0.98
+},
+"Ml": {
+"zone": "Manila Trench",
+"distKm": 0,
+"dipAz": 99.7,
+"azConsistency": 0.96
+},
+"Ma": {
+"zone": "South America",
+"distKm": 70,
+"dipAz": 100.4,
+"azConsistency": 0.98
+},
+"Mr": {
+"zone": "Izu-Bonin",
+"distKm": 0,
+"dipAz": 285.7,
+"azConsistency": 0.9
+},
+"Mn": {
+"zone": "Alaska",
+"distKm": 310,
+"dipAz": 33.1,
+"azConsistency": 0.98
+},
+"NB": {
+"zone": "Solomon Islands",
+"distKm": 0,
+"dipAz": 324.4,
+"azConsistency": 0.55
+},
+"NH": {
+"zone": "Vanuatu",
+"distKm": 0,
+"dipAz": 72.7,
+"azConsistency": 0.99
+},
+"NA": {
+"zone": "Calabria",
+"distKm": 216,
+"dipAz": 244.8,
+"azConsistency": 0.96
+},
+"Pa": {
+"zone": "Pamir",
+"distKm": 0,
+"dipAz": 169.6,
+"azConsistency": 0.91
+},
+"Pu": {
+"zone": "Solomon Islands",
+"distKm": 0,
+"dipAz": 358.0,
+"azConsistency": 0.85
+},
+"RN": {
+"zone": "South America",
+"distKm": 0,
+"dipAz": 109.8,
+"azConsistency": 0.96
+},
+"Ry": {
+"zone": "Ryukyu",
+"distKm": 0,
+"dipAz": 302.7,
+"azConsistency": 0.98
+},
+"Sn": {
+"zone": "Halmahera",
+"distKm": 9,
+"dipAz": 297.6,
+"azConsistency": 0.36
+},
+"SM": {
+"zone": "South America",
+"distKm": 0,
+"dipAz": 96.2,
+"azConsistency": 1.0
+},
+"Sc": {
+"zone": "Scotia Sea",
+"distKm": 0,
+"dipAz": 261.4,
+"azConsistency": 0.82
+},
+"Su": {
+"zone": "Sumatra-Java",
+"distKm": 0,
+"dipAz": 11.5,
+"azConsistency": 0.99
+},
+"TKH": {
+"zone": "Kermadec",
+"distKm": 0,
+"dipAz": 280.7,
+"azConsistency": 0.99
+},
+"We": {
+"zone": "Solomon Islands",
+"distKm": 335,
+"dipAz": 269.4,
+"azConsistency": 0.61
+}
+},
+"matchKm": 400.0
 }

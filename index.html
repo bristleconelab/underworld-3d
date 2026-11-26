@@ -3,85 +3,206 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Underworld: the ocean floors that sank into the Earth</title>
-  <meta name="description" content="Open the Earth on a 3D globe: 100 slabs of old ocean floor sinking through the mantle, the plates diving under trenches today, and 89,000 earthquakes at their real depth. Open data from the Atlas of the Underworld, USGS Slab2 and ComCat.">
+  <title>Underworld 3D: subducted slabs, Slab2 and deep seismicity</title>
+  <meta name="description" content="3D workbench for the mantle: 100 slabs of the Atlas of the Underworld with depth and age uncertainties, USGS Slab2 geometry, 89,712 M5+ earthquakes, PB2002 plate boundaries and PREM, with great-circle cross-sections, depth-age regression, b-values and data export.">
   <meta name="theme-color" content="#0b0e1a">
   <link rel="canonical" href="https://underworld.bristleconelab.org/">
-  <meta property="og:title" content="Underworld">
-  <meta property="og:description" content="The ocean floors that sank into the Earth, and where they are now.">
+  <meta property="og:title" content="Underworld 3D">
+  <meta property="og:description" content="Subducted slabs, Slab2 and deep seismicity in one 3D workbench, with cross-sections and data export.">
   <meta property="og:url" content="https://underworld.bristleconelab.org/">
   <meta property="og:image" content="https://underworld.bristleconelab.org/og-image.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%230b0e1a' stroke='%237fd3ff' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23b5482a'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23f0c04a'/%3E%3C/svg%3E">
 </head>
 <body>
-  <div id="globe" aria-label="3D Earth. Drag to turn it; click a glowing dot to read about a sunken slab."></div>
+  <div id="globe" aria-label="3D Earth. Drag to rotate, scroll to zoom, right-drag to pan. Click a slab, an earthquake or a Slab2 surface to inspect it."></div>
 
-  <header class="masthead">
-    <h1>Underworld</h1>
-    <p>Ocean floor that sank into the Earth, and where it is now</p>
-    <nav class="highlights" aria-label="Highlights"><span class="fine">Start with</span></nav>
+  <header class="topbar" data-occludes>
+    <button id="btn-left" class="icon" aria-expanded="true" aria-controls="left" title="Layers, filters and section controls">☰</button>
+    <h1>Underworld 3D</h1>
+    <span class="sub">Atlas of the Underworld · Slab2 · ComCat · PB2002 · PREM</span>
+    <label class="search"><span class="sr">Find a slab</span><input id="search" list="slab-names" placeholder="Find slab: name or abbreviation" autocomplete="off"></label>
+    <datalist id="slab-names"></datalist>
+    <nav class="tools">
+      <button id="btn-table" class="tb">Catalogue</button>
+      <button id="btn-analysis" class="tb" aria-expanded="false">Analysis</button>
+      <button id="btn-export" class="tb">Export</button>
+      <button id="btn-cite" class="tb">Cite</button>
+      <button id="btn-link" class="tb" title="Copy a link to this exact view">Permalink</button>
+      <button id="btn-theme" class="tb" title="Dark (screen) or light (print) theme">Light</button>
+      <button id="btn-about" class="tb">About</button>
+    </nav>
   </header>
 
-  <section class="controls" aria-label="What to show">
-    <label class="xray">
-      <span>See inside</span>
-      <input id="xray" type="range" min="0" max="100" value="65" aria-describedby="xray-hint">
-      <span id="xray-hint" class="fine">Slide right to fade the surface</span>
-    </label>
-    <ul class="toggles">
-      <li><label><input type="checkbox" data-layer="slabs" checked><span class="sw sw-slab"></span>Sunken ocean floor (slabs)</label></li>
-      <li><label><input type="checkbox" data-layer="plates" checked><span class="sw sw-plate"></span>Plates diving under trenches</label></li>
-      <li><label><input type="checkbox" data-layer="quakes0" checked><span class="sw" style="background:#ffd166"></span>Earthquakes 0–70 km deep</label></li>
-      <li><label><input type="checkbox" data-layer="quakes1" checked><span class="sw" style="background:#ff8c42"></span>70–300 km</label></li>
-      <li><label><input type="checkbox" data-layer="quakes2" checked><span class="sw" style="background:#e0559b"></span>300–700 km</label></li>
-      <li><label><input type="checkbox" data-layer="boundaries" checked><span class="sw sw-core"></span>Mantle boundaries and core</label></li>
-    </ul>
-  </section>
+  <aside id="left" class="dock left" data-occludes aria-label="Layers and filters">
+    <details open><summary>Layers</summary>
+      <ul class="toggles">
+        <li><label><input type="checkbox" data-layer="slabs"><span class="sw sw-slab"></span>Atlas slabs (midpoint, top–base, ±error)</label></li>
+        <li><label><input type="checkbox" data-layer="slab2"><span class="sw sw-viridis"></span>Slab2 slab-top surface</label></li>
+        <li><label><input type="checkbox" data-layer="quakes"><span class="sw sw-plasma"></span>Earthquakes M≥5 (ComCat)</label></li>
+        <li><label><input type="checkbox" data-layer="boundaries"><span class="sw sw-pb"></span>Plate boundaries (PB2002)</label></li>
+        <li><label><input type="checkbox" data-layer="shells"><span class="sw sw-core"></span>410 / 660 / CMB / ICB</label></li>
+        <li><label><input type="checkbox" data-layer="graticule"><span class="sw sw-grat"></span>Graticule 30°</label></li>
+      </ul>
+      <label class="row"><span>Surface opacity</span><input id="opacity" type="range" min="0" max="100" step="1"><output id="opacity-v" class="num"></output></label>
+      <p id="opacity-note" class="fine" hidden>Surface is opaque while the Earth is cut open.</p>
+    </details>
 
-  <section class="timebar" aria-label="Time">
-    <label for="time" id="time-label">Today: every slab</label>
-    <input id="time" type="range" min="0" max="300" step="5" value="0">
-    <div class="time-ticks" aria-hidden="true"><span>today</span><span>100</span><span>200</span><span>300 million years ago</span></div>
-    <button id="time-reset" class="link" hidden>Back to today</button>
-  </section>
+    <details open><summary>Earthquake filter <span id="q-count" class="num badge-n"></span></summary>
+      <div class="pair"><span>Magnitude</span><input id="q-mag0" type="number" min="5" max="9.6" step="0.1" class="num"><span>–</span><input id="q-mag1" type="number" min="5" max="9.6" step="0.1" class="num"></div>
+      <div class="pair"><span>Year</span><input id="q-yr0" type="number" min="1973" step="1" class="num"><span>–</span><input id="q-yr1" type="number" min="1973" step="1" class="num"></div>
+      <div class="pair"><span>Depth km</span><input id="q-dep0" type="number" min="0" max="800" step="10" class="num"><span>–</span><input id="q-dep1" type="number" min="0" max="800" step="10" class="num"></div>
+      <button id="q-reset" class="link">Reset filter</button>
+    </details>
 
-  <nav class="corner">
-    <button id="list-open" class="btn">All 100 slabs</button>
-    <button id="about-open" class="btn ghost">About</button>
-  </nav>
+    <details open><summary>Cross-section</summary>
+      <p id="sec-off" class="fine">Select a slab, or cut through the point at the centre of the view.</p>
+      <button id="sec-here" class="btn small">Cut at view centre</button>
+      <div id="sec-on" hidden>
+        <p id="sec-desc" class="fine num"></p>
+        <label class="row"><span>Azimuth</span><input id="sec-az" type="range" min="0" max="359" step="1"><output id="sec-az-v" class="num"></output></label>
+        <label class="check"><input id="sec-auto" type="checkbox"> Auto: Slab2 down-dip azimuth</label>
+        <label class="row"><span>Swath ±</span><input id="sec-w" type="range" min="25" max="500" step="5"><output id="sec-w-v" class="num"></output></label>
+        <label class="row"><span>Half-length</span><input id="sec-l" type="range" min="300" max="5000" step="50"><output id="sec-l-v" class="num"></output></label>
+        <label class="row"><span>V.E.</span><select id="sec-ve"><option value="1">1:1</option><option value="2">2:1</option><option value="5">5:1</option></select></label>
+        <div class="btns"><button id="sec-view" class="btn small ghost">Face the section</button><button id="sec-close" class="btn small ghost">Close section</button></div>
+      </div>
+    </details>
 
-  <p id="hint">Drag to turn the Earth. Click a glowing dot to read the story of a sunken ocean floor.</p>
-  <div id="hover" role="status" aria-live="polite"></div>
+    <details><summary>Time</summary>
+      <label class="row"><span>Age</span><input id="time" type="range" min="0" max="300" step="5"><output id="time-v" class="num"></output></label>
+      <fieldset class="radios"><legend class="sr">Time mode</legend>
+        <label><input type="radio" name="tmode" value="filter"> Subduction-activity filter (present-day positions)</label>
+        <label><input type="radio" name="tmode" value="advect"> Kinematic back-advection: z(t) = max(0, z − v·t)</label>
+      </fieldset>
+      <p id="time-note" class="fine"></p>
+    </details>
 
-  <aside id="panel" hidden>
-    <button class="close" aria-label="Close">×</button>
-    <div class="panel-body"></div>
+    <details><summary>Phase-boundary deflection</summary>
+      <p class="fine">Δz = γ ΔT / (ρ g), ρ and g from PREM. γ ranges: <span id="clap-refs"></span></p>
+      <label class="row"><span>Slab ΔT (K)</span><input id="pb-dt" type="number" value="-600" step="50" class="num"></label>
+      <label class="row"><span>γ₄₁₀ MPa/K</span><input id="pb-g410" type="number" step="0.1" class="num"></label>
+      <label class="row"><span>γ₆₆₀ MPa/K</span><input id="pb-g660" type="number" step="0.1" class="num"></label>
+      <p id="pb-out" class="num result"></p>
+    </details>
+
+    <details open><summary>Legend</summary>
+      <div class="legend">
+        <div class="cb"><span>Earthquake depth (km)</span><i class="bar plasma"></i><span class="ticks num"><b>0</b><b>350</b><b>700</b></span></div>
+        <div class="cb"><span>Slab2 slab-top depth (km)</span><i class="bar viridis"></i><span class="ticks num"><b>0</b><b>350</b><b>700</b></span></div>
+        <div class="mags" id="mag-legend"><span>Magnitude (symbol area ∝ rupture radius)</span></div>
+        <ul class="cats">
+          <li><i style="background:var(--active)"></i>Active subduction (top at 0 km, 0 Ma)</li>
+          <li><i style="background:var(--detached)"></i>Detached slab remnant</li>
+          <li><i class="ln" style="background:#D55E00"></i>Subduction zone</li>
+          <li><i class="ln" style="background:#CC79A7"></i>Other convergent boundary</li>
+          <li><i class="ln" style="background:#009E73"></i>Spreading ridge / rift</li>
+          <li><i class="ln" style="background:#F0E442"></i>Transform fault</li>
+        </ul>
+      </div>
+    </details>
   </aside>
 
-  <dialog id="list" aria-labelledby="list-title">
+  <aside id="inspector" class="dock right" data-occludes hidden aria-label="Inspector">
+    <button class="close" aria-label="Close inspector">×</button>
+    <div class="ins-body"></div>
+  </aside>
+
+  <section id="analysis" class="dock bottom" data-occludes hidden aria-label="Analysis">
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="section">Cross-section</button>
+      <button role="tab" data-tab="depthage">Depth–age</button>
+      <button role="tab" data-tab="rates">Sinking rates</button>
+      <button role="tab" data-tab="seismicity">Seismicity</button>
+      <button role="tab" data-tab="prem">PREM</button>
+      <span class="spacer"></span>
+      <button id="chart-svg" class="tb small">SVG</button>
+      <button id="chart-png" class="tb small">PNG 300 dpi</button>
+      <button id="chart-csv" class="tb small">CSV</button>
+      <button id="analysis-close" class="icon small" aria-label="Close analysis">×</button>
+    </div>
+    <div id="chart" class="chart-host"></div>
+  </section>
+
+  <div id="hud" class="num" aria-live="off"></div>
+  <div id="viewaids" aria-hidden="true"><div id="compass"><span>N</span></div><div id="scalebar"><i></i><span></span></div></div>
+  <div id="hover" role="status" aria-live="polite"></div>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+
+  <dialog id="table" aria-labelledby="table-title" class="wide">
     <button class="close" aria-label="Close">×</button>
-    <h2 id="list-title">Sunken ocean floors</h2>
-    <p>Each is a slab of old ocean floor that went down at a trench and still sits in the mantle, found with seismic tomography by van der Meer and colleagues (2018). Deepest last.</p>
-    <div class="list-cols"><section><h3>Still sinking</h3><ul id="list-active"></ul></section><section><h3>Gone down</h3><ul id="list-sunk"></ul></section></div>
+    <h2 id="table-title">Slab catalogue <span class="fine">(van der Meer et al. 2018, 2019 table)</span></h2>
+    <div class="filters">
+      <input id="t-q" type="search" placeholder="Search name or abbreviation">
+      <select id="t-status"><option value="">All status</option><option value="active">Active subduction</option><option value="detached">Detached remnant</option></select>
+      <select id="t-regime"><option value="">All depth regimes</option><option>upper mantle</option><option>spans 660</option><option>lower mantle</option></select>
+      <span id="t-n" class="fine num"></span>
+      <span class="spacer"></span>
+      <button id="t-compare" class="btn small" disabled>Compare selected</button>
+      <button id="t-csv" class="btn small ghost">CSV</button>
+      <button id="t-geojson" class="btn small ghost">GeoJSON</button>
+    </div>
+    <div class="grid-wrap"><table class="grid num"><thead></thead><tbody></tbody></table></div>
+  </dialog>
+
+  <dialog id="compare" aria-labelledby="compare-title" class="wide">
+    <button class="close" aria-label="Close">×</button>
+    <h2 id="compare-title">Compare slabs</h2>
+    <div class="cmp-body"></div>
+  </dialog>
+
+  <dialog id="export" aria-labelledby="export-title">
+    <button class="close" aria-label="Close">×</button>
+    <h2 id="export-title">Export</h2>
+    <ul class="exports">
+      <li><button data-x="slabs-csv" class="link">Slab catalogue (CSV)</button></li>
+      <li><button data-x="slabs-geojson" class="link">Slab catalogue (GeoJSON, midpoints)</button></li>
+      <li><button data-x="quakes-csv" class="link">Earthquakes passing the filter (CSV; in the section swath when a section is open)</button></li>
+      <li><button data-x="section-csv" class="link">Cross-section projection: events, Slab2, slabs (CSV)</button></li>
+      <li><button data-x="chart-svg" class="link">Current analysis chart (SVG)</button></li>
+      <li><button data-x="chart-png" class="link">Current analysis chart (PNG, 300 dpi)</button></li>
+      <li><button data-x="globe-png" class="link">3D view (PNG, 2× screen resolution)</button></li>
+      <li><button data-x="state-json" class="link">View state (JSON, for reproducing this view)</button></li>
+    </ul>
+    <p class="fine">Exports carry the source citations in a header line or properties. Licences: Atlas CC BY 4.0, Slab2/ComCat public domain, PB2002 ODC-BY 1.0.</p>
+  </dialog>
+
+  <dialog id="cite" aria-labelledby="cite-title">
+    <button class="close" aria-label="Close">×</button>
+    <h2 id="cite-title">Cite the data</h2>
+    <div class="tabs small" role="tablist"><button data-fmt="bibtex" aria-selected="true">BibTeX</button><button data-fmt="ris">RIS</button><button data-fmt="apa">APA</button></div>
+    <pre id="cite-text" class="cite"></pre>
+    <div class="btns"><button id="cite-copy" class="btn small">Copy</button><button id="cite-dl" class="btn small ghost">Download</button></div>
   </dialog>
 
   <dialog id="about" aria-labelledby="about-title">
     <button class="close" aria-label="Close">×</button>
-    <h2 id="about-title">About Underworld</h2>
-    <p>When two plates meet, the older, heavier ocean floor bends down into the mantle at a trench. It keeps going: the slab sinks a centimetre or two a year, and after 100 million years or more it can reach the bottom of the mantle, almost 2,900 km down. Seismic waves travel a little faster through these cold slabs, so seismologists can map them.</p>
-    <p>This globe shows three things at their real depth: the slabs found in the mantle, the plates still diving under trenches today, and the earthquakes that break inside them. The surface is see-through so you can look inside; the depth scale is true.</p>
-    <h3>Where the data comes from</h3>
+    <h2 id="about-title">About Underworld 3D</h2>
+    <p>A 3D workbench for subduction and the mantle. It puts the slab remnants mapped by seismic tomography (Atlas of the Underworld), today's slab-top geometry (Slab2), M≥5 seismicity (ComCat) and plate boundaries (PB2002) on one globe at true depth, with PREM as the reference Earth.</p>
+    <h3>Methods</h3>
+    <ul>
+      <li><b>Coordinates.</b> Sphere of radius 6,371 km; latitudes treated as geocentric although the sources give WGS84 geodetic latitudes (difference ≤ 0.19°, about 21 km, below the Atlas uncertainties of 50–200 km).</li>
+      <li><b>Cross-section.</b> A vertical plane through the Earth's centre along a great circle (any azimuth). For slabs that reach the upper mantle and lie within 400 km of a Slab2 zone, the azimuth defaults to the mean Slab2 down-dip direction there, so the profile runs across strike. Data within the swath (default ±150 km) are projected orthogonally onto the plane; distances are arc lengths at the surface.</li>
+      <li><b>Atlas ages.</b> Base age = onset of subduction of the slab's oldest part, top age = end of subduction (0 Ma = ongoing). Both are ranges [young–old]. Sinking rate = depth ÷ mean age (km/Myr = mm/yr) under the Atlas's assumption of vertical sinking.</li>
+      <li><b>Back-advection.</b> z(t) = max(0, z − v·t) for top and base with the Atlas rates. It moves slabs only vertically; plate motion and palaeogeography are not reconstructed, and the surface image stays present-day.</li>
+      <li><b>Seismicity.</b> M₀ = 10^(1.5M + 9.1) N·m; b-value by maximum likelihood (Aki 1965, Utsu binning correction), Mc by maximum curvature + 0.2, σ after Shi &amp; Bolt (1982). mb and Ms saturate, so moment sums using them are lower bounds; the share of Mw-type magnitudes is reported.</li>
+      <li><b>Distance to Slab2.</b> Signed distance from the nearest Slab2 node's tangent plane (positive above the slab top). Slab2 is thinned to 0.2°; dip and down-dip azimuth are computed from the depth gradient.</li>
+      <li><b>PREM.</b> Dziewonski &amp; Anderson (1981), isotropic; gravity and pressure integrated from density (centre 364 GPa, CMB 135.8 GPa).</li>
+    </ul>
+    <h3>Data</h3>
     <ul class="sources">
-      <li>Sunken slabs: <a href="https://doi.org/10.1016/j.tecto.2017.10.004">van der Meer, van Hinsbergen and Spakman (2018) Atlas of the underworld</a>, Tectonophysics (CC BY 4.0), table as updated on <a href="https://www.atlas-of-the-underworld.org">atlas-of-the-underworld.org</a>. A dot marks the middle of each slab; the bar under it spans its top and base; the dashed line joins it to the place where the rocks at the surface record its subduction.</li>
-      <li>Plates diving under trenches: <a href="https://doi.org/10.5066/F7PV6JNV">Slab2, Hayes (2018)</a>, U.S. Geological Survey (public domain).</li>
-      <li>Earthquakes of magnitude 5 and above since 1973: <a href="https://earthquake.usgs.gov/fdsnws/event/1/">USGS ComCat</a> (public domain).</li>
+      <li>Slabs: <a href="https://doi.org/10.1016/j.tecto.2017.10.004">van der Meer, van Hinsbergen &amp; Spakman (2018)</a>, Tectonophysics 723 (CC BY 4.0), 2019 table from <a href="https://www.atlas-of-the-underworld.org">atlas-of-the-underworld.org</a>.</li>
+      <li>Slab-top geometry: <a href="https://doi.org/10.5066/F7PV6JNV">Slab2, Hayes (2018)</a>, USGS (public domain). Thickness and uncertainty grids are not included.</li>
+      <li>Earthquakes: <a href="https://earthquake.usgs.gov/fdsnws/event/1/">USGS ComCat</a> (public domain), M≥5 since 1973, <span id="about-quakes"></span>.</li>
+      <li>Plate boundaries and relative velocities: <a href="https://doi.org/10.1029/2001GC000252">Bird (2003) PB2002</a>, GeoJSON by H. Ahlenius (<a href="https://github.com/fraxen/tectonicplates">fraxen/tectonicplates</a>, ODC-BY 1.0).</li>
       <li>Surface: NASA Blue Marble through <a href="https://earthdata.nasa.gov/gibs">GIBS</a> (public domain).</li>
     </ul>
-    <h3>What to keep in mind</h3>
-    <p>Slab positions, depths and ages come from reading tomography images and plate history; each has an error of about 100 km in depth and several million years in age. Seismic tomography images themselves are not shown here because their reuse terms are not stated.</p>
-    <p>Code: <a href="https://github.com/bristleconelab/underworld-3d">github.com/bristleconelab/underworld-3d</a> (MIT). From <a href="https://bristleconelab.org">Bristlecone Lab</a>; see also <a href="https://oceanlife.bristleconelab.org">Ocean Life Atlas</a> and <a href="https://seismicityatlas.org">Global Seismicity Atlas</a>.</p>
+    <h3>Not included, and why</h3>
+    <p>Seismic tomography models, focal mechanisms (Global CMT), volcano catalogues (Smithsonian GVP), LLSVP outlines and palaeogeographic reconstructions are not shown: their reuse terms are either not stated or limited to non-commercial use, or (reconstructions) they need a plate model this site does not yet carry.</p>
+    <p>Code: <a href="https://github.com/bristleconelab/underworld-3d">github.com/bristleconelab/underworld-3d</a> (MIT). Part of <a href="https://bristleconelab.org">Bristlecone Lab</a>.</p>
   </dialog>
+
+  <dialog id="ctxlost"><h2>Graphics context lost</h2><p>The browser stopped the 3D view (GPU reset or memory pressure). Reload to continue; the permalink keeps your view.</p><button class="btn" onclick="location.reload()">Reload</button></dialog>
 
   <script type="module" src="/src/main.ts"></script>
 </body>

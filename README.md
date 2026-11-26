@@ -1,83 +1,142 @@
-# Underworld
+# Underworld 3D
 
-**The ocean floors that sank into the Earth, and where they are now.** An open 3D globe of the mantle.
+**A 3D workbench for subduction and the mantle.** The 100 slab remnants of the Atlas of the Underworld with their depth
+and age uncertainties, today's slab-top geometry from USGS Slab2, 89,712 M≥5 earthquakes from ComCat, PB2002 plate
+boundaries and the PREM reference Earth, on one globe at true depth, with great-circle cross-sections, regression and
+magnitude statistics, and export of every table and figure.
 
-When plates meet, old ocean floor bends down into the mantle at a trench and keeps sinking, a centimetre or two a year,
-for a hundred million years or more. Seismologists find these cold slabs because earthquake waves cross them a little
-faster. Underworld puts them on a globe at their true depth, together with the plates diving under trenches today and
-the earthquakes that break inside them, and tells each slab's story in plain words.
+Live: **https://underworld.bristleconelab.org**
 
-- **100 sunken slabs** from the Atlas of the Underworld, each at its real depth: blue if it is still going down, lilac
-  if it went down long ago. A bar spans its top and base; a dashed line joins it to the place where the rocks at the
-  surface record its subduction.
-- **Click a slab and the Earth is cut open** along its meridian: the mantle, the 660 km boundary and the core appear as
-  a cross-section, with the slab and the earthquakes around it in a 760 km slice.
-- **The plates diving under trenches today** (USGS Slab2, 27 subduction zones) as 3D surfaces coloured by depth.
-- **89,682 earthquakes** of magnitude 5 and above since 1973 (USGS), coloured by depth: shallow, intermediate, deep.
-- **A time slider** shows which slabs were going down at a chosen age, up to 300 million years ago.
-- **See inside** fades the surface; six highlights (Tonga, Mariana, Aegean, India, Cocos, Al Jawf) are a place to start.
+![Pacific: Slab2 surfaces, seismicity coloured by depth, Atlas slabs with depth bars](docs/img/globe.png)
 
-![The western Pacific: plates diving under trenches, deep earthquakes and sunken slabs](docs/img/globe.png)
+## What it does
 
-| Tonga and Kermadec, cut open | India: ocean floor that closed before the Himalayas |
+- **Great-circle cross-sections.** Select a slab and the Earth is cut along a vertical plane through its midpoint. For
+  slabs that reach the upper mantle near a Slab2 zone (42 of 100), the profile azimuth defaults to the mean Slab2
+  down-dip direction, so Tonga, Mariana, the Andes or Japan are cut across strike and the Wadati–Benioff zone shows
+  its true dip. Azimuth (0–359°), swath half-width (25–500 km, default ±150 km), half-length and vertical exaggeration
+  (1:1, 2:1, 5:1) are adjustable; “Cut at view centre” makes a section anywhere.
+- **Synchronised 2D profile** (SVG): distance along the profile × depth, with earthquakes sized by magnitude, projected
+  Slab2 nodes, Atlas slabs with top/base error bars, PB2002 boundary crossings with relative velocity, and the 220,
+  410, 520, 660, ~1,000 km and CMB reference depths. Click an event or a slab to inspect it.
+- **Depth–age analysis.** Base (onset) and top (end) of every slab with age ranges and depth errors, OLS fits through
+  the origin above and below 660 km with 95% confidence intervals, and a free-intercept lower-mantle fit. The catalogue
+  gives **12.1 mm/yr (95% CI 11.7–12.6, n = 136, R² 0.77)** below 660 km, the ~12 mm/yr of van der Meer et al. (2018).
+- **Sinking rates** versus depth, base and top, with their errors (log scale).
+- **Seismicity**: depth histogram of the current section swath (or the filtered global catalogue), cumulative
+  Gutenberg–Richter plot, maximum-likelihood b-value with σ and Mc, summed seismic moment and equivalent Mw, and the
+  share of Mw-type magnitudes (mb/Ms saturate, so their moments are lower bounds).
+- **PREM** profile (Vp, Vs, ρ, pressure, gravity) with the selected slab's depth marked, a cursor HUD that gives
+  latitude, longitude, depth, P, Vp, Vs and ρ under the pointer, and a phase-boundary deflection calculator
+  (Δz = γΔT/ρg, Clapeyron slopes with literature ranges).
+- **Inspectors** for slabs (all catalogue fields, rate z-score, surface-record offset by great-circle distance and
+  azimuth, linked Slab2 zone), earthquakes (UTC time, location and depth errors, magnitude type, M₀, signed distance from
+  the Slab2 slab top, USGS event page) and Slab2 points (depth, dip, strike).
+- **Catalogue table**: search, sort on every column, filter by status and depth regime, compare up to three slabs.
+- **Earthquake filters** by magnitude, year and depth, applied on the GPU.
+- **Time**: either a subduction-activity filter at present-day positions, or kinematic back-advection
+  z(t) = max(0, z − v·t) under the Atlas's vertical-sinking assumption. Neither reconstructs plate motion; the page says so.
+- **Export**: catalogue CSV/GeoJSON, filtered events CSV, section projection CSV, any chart as SVG or 300 dpi PNG, the
+  3D view as PNG, the view state as JSON; BibTeX/RIS/APA references; a permalink that restores slab, section, filters,
+  time, layers, theme, open chart and camera.
+- Dark (screen) and light (print) themes; colour maps viridis and plasma, categorical colours Okabe–Ito.
+
+| Tonga–Kermadec, cut along the 281° down-dip azimuth | Depth–age with the lower-mantle fit |
 |---|---|
-| ![Cross-section through the Tonga slab](docs/img/tonga.png) | ![Cross-section through the India slab](docs/img/india.png) |
+| ![Tonga cross-section](docs/img/tonga.png) | ![Depth versus age](docs/img/depth-age.png) |
 
-| 150 million years ago | On a phone |
+| Mariana: depth histogram and Gutenberg–Richter | Back-advection to 150 Ma |
 |---|---|
-| ![Slabs that were going down 150 million years ago](docs/img/time.png) | <img src="docs/img/phone.png" alt="Mariana on a phone" width="260"> |
+| ![Seismicity](docs/img/seismicity.png) | ![Slabs at 150 Ma](docs/img/time.png) |
 
-Every slab has a link, for example `#slab=TKH` (Tonga–Kermadec–Hikurangi) or `#slab=In` (India).
+| Light theme, Cocos section | Phone |
+|---|---|
+| ![Light theme](docs/img/light.png) | <img src="docs/img/phone.png" alt="Mariana on a phone" width="260"> |
 
-## Why
-
-The slabs are known, but the tools that show them are built for specialists: the Seismic Tomography Globe and SubMachine
-show raw velocity anomalies without a plain-language legend, and the Atlas of the Underworld itself is a 2D map. None
-puts the named slabs, today's subduction zones and the earthquakes in one cut-open view with a story for each slab.
+Deep links, for example `#slab=TKH&tab=section`, `#slab=In&tab=depthage`,
+`#sec=142,38,290,1500,100&mag=6,9.6&tab=seismicity`.
 
 ## Data
 
 | Layer | Source | Licence |
 |---|---|---|
-| Sunken slabs: names, depth range, middle point, ages, sinking rates, surface record | van der Meer, van Hinsbergen and Spakman (2018) *Atlas of the underworld*, Tectonophysics 723, [doi:10.1016/j.tecto.2017.10.004](https://doi.org/10.1016/j.tecto.2017.10.004); table as updated in 2019 on [atlas-of-the-underworld.org](https://www.atlas-of-the-underworld.org) | CC BY 4.0 (article) |
-| Plates under trenches | Hayes (2018) Slab2, U.S. Geological Survey, [doi:10.5066/F7PV6JNV](https://doi.org/10.5066/F7PV6JNV) | public domain / CC0 |
-| Earthquakes, M5+, 1973 onwards | USGS ComCat, [FDSN event service](https://earthquake.usgs.gov/fdsnws/event/1/) | public domain |
-| Surface image | NASA Blue Marble through [GIBS](https://earthdata.nasa.gov/gibs) | public domain |
+| Slab remnants: midpoint, top/base depth ± error, onset/end age ranges, sinking rates ± σ, geological record | van der Meer, van Hinsbergen & Spakman (2018) *Atlas of the underworld*, Tectonophysics 723, [doi:10.1016/j.tecto.2017.10.004](https://doi.org/10.1016/j.tecto.2017.10.004); 2019 table from [atlas-of-the-underworld.org](https://www.atlas-of-the-underworld.org) | CC BY 4.0 (article) |
+| Slab-top depth (27 zones) | Hayes (2018) Slab2, USGS, [doi:10.5066/F7PV6JNV](https://doi.org/10.5066/F7PV6JNV) | public domain |
+| Earthquakes M≥5 since 1973 | USGS ComCat, [FDSN event service](https://earthquake.usgs.gov/fdsnws/event/1/), [doi:10.5066/F7MS3QZH](https://doi.org/10.5066/F7MS3QZH) | public domain |
+| Plate boundaries, step classes, relative velocities | Bird (2003) PB2002, [doi:10.1029/2001GC000252](https://doi.org/10.1029/2001GC000252); GeoJSON by H. Ahlenius, [fraxen/tectonicplates](https://github.com/fraxen/tectonicplates) | ODC-BY 1.0 |
+| Reference Earth | Dziewonski & Anderson (1981) PREM, [doi:10.1016/0031-9201(81)90046-7](https://doi.org/10.1016/0031-9201(81)90046-7) | published model |
+| Surface image | NASA Blue Marble via [GIBS](https://earthdata.nasa.gov/gibs) | public domain |
 
-Seismic tomography images are **not** included: none of the models checked (UU-P07, S40RTS and others on EarthScope's
-Earth Model Collaboration) states reuse terms beyond a request to cite.
+**Not included.** Seismic tomography, Global CMT focal mechanisms, LLSVP outlines and palaeogeographic reconstructions:
+none of the candidate sources states reuse terms beyond a request to cite, or they need a plate model this site does not
+carry. Smithsonian GVP volcanoes: its terms allow non-commercial use only and need permission for publication. Slab2
+thickness and uncertainty grids: ScienceBase serves them behind a browser bot check; only the depth grids were collected.
 
-Stored files (`public/data/`, 3.1 MB):
+### Stored files (`public/data/`, 5.1 MB) and how they are built
 
-- `slabs.json` (18 KB) from `npm run data:atlas`. Three Telkhinia slabs give ages as geological periods; they are
-  converted with the ICS 2023 chart (Triassic 251.9–201.4 Ma, Early Cretaceous 145.0–100.5 Ma) and flagged on the
-  page. A 9999 in the source means "not estimated" and is stored as null: some sinking rates, and the ages and
-  surface record of the Maldives slab.
-- `quakes.bin` (877 KB, 10 bytes per event) from `npm run data:quakes`, fetched in 5-year windows below the API limit.
-- `plates/` (2.2 MB, 27 zones, 107,242 triangles) from `npm run data:slab2`: Slab2 depth grids thinned to 0.2°.
-  ScienceBase answers scripts with a bot check, so the 27 depth grids were collected in a normal browser session into
-  `data-raw/slab2_bundle.json` (not committed) and converted by `scripts/build_slab2.py`.
+Each output records the SHA-256 of the raw input it was built from (`sourceSha256` / `responseSha256`).
 
-## Honest limits
+- `slabs.json` (28 KB) — `npm run data:atlas`. In every row the first age column of each pair holds the older value
+  whatever the header says (India: base 140/120, top 50/35); all ranges are stored as **[young, old] Ma**. `9999`
+  (“not estimated”) becomes null in every column (Maldives has no surface record, ages or rates). Three Telkhinia slabs
+  give ages as periods, converted with the ICS 2023/09 chart (Triassic 251.9–201.4 Ma, Early Cretaceous 145.0–100.5 Ma).
+  Rate errors, catalogue number and update date are kept; a table rate of 0 with no age is a blank and becomes null.
+  The build checks base rate = base depth ÷ mean age and lists the two slabs where the table disagrees by > 5%
+  (Agattu, Mayn) in `rateCheck`; the page shows them as tabulated, with a note.
+- `quakes.bin` (1.4 MB, 16 bytes/event: lon, lat, depth, magnitude, magnitude type, origin time, depth and horizontal
+  error), `quakes_ids.txt` (USGS event ids, loaded only when an event is inspected), `quakes.json` —
+  `npm run data:quakes`. 27 events located above sea level are set to 0 km and counted.
+- `plates/` (2.6 MB, 27 zones, 109,418 triangles) — `npm run data:slab2`. Depth grids thinned to 0.2°; cells with
+  three of four corners inside the slab keep one triangle, so edges follow the outline. Dip and down-dip azimuth per node
+  from the depth gradient. `index.json` links Atlas slabs above 660 km to the nearest zone within 400 km with the mean
+  down-dip azimuth and its circular consistency R. The raw bundle (`data-raw/slab2_bundle.json`) was collected in a
+  browser session and is not committed.
+- `pb2002.bin` (113 KB, 5,824 steps) — `npm run data:boundaries`.
 
-- Slab positions, depths and ages come from reading tomography and plate history: about ±100–200 km in depth and a few
-  million years in age. A slab's dot marks its middle; the real slab is a sheet hundreds of kilometres wide.
-- The dashed path from the surface record to the slab is a guide for the eye, not the route the slab took (plates have
-  moved since it went down).
-- Slab2 covers the upper part of today's slabs (down to about 700 km) and only active subduction zones.
+## Method notes and limits
+
+- Sphere of radius 6,371 km; latitudes are treated as geocentric although the sources give WGS84 geodetic latitudes
+  (≤ 0.19°, about 21 km), below the Atlas uncertainties of 50–200 km.
+- Section distances are arc lengths at the surface; data within the swath are projected orthogonally onto the plane.
+- Atlas positions are a slab's midpoint; the real slab is a sheet hundreds of kilometres wide. Depth errors are the
+  table's; age ranges are ranges, not 1σ.
+- The dashed line from a slab's geological record to its midpoint is the great-circle path (SLERP), not the route the
+  slab took.
+- b-values use M ≥ Mc only (Mc by maximum curvature + 0.2, never below 5.0); sections with fewer than 50 such events
+  report none.
+- Earthquake symbol area is proportional to M₀^(1/3), i.e. to rupture radius at constant stress drop, clamped to
+  1.5–22 px.
+
+## Architecture
+
+```
+src/
+  core/      store.ts (typed state, URL permalink), format.ts, colormap.ts
+  science/   geodesy.ts (sphere, haversine, bearing, SLERP), prem.ts, seismology.ts (M0, b-value),
+             stats.ts (OLS + CI), section.ts (great-circle projection), slabs.ts (intervals, back-advection, fits)
+  data/      decode.ts (binary formats), schema.ts (runtime validators), spatial.ts (hash grid, distance to Slab2),
+             load.ts, export.ts (CSV, GeoJSON, SVG/PNG, BibTeX/RIS/APA)
+  render3d/  globe.ts (on-demand rendering, instanced slabs, one merged Slab2 mesh, GPU-filtered quakes,
+             arbitrary section clipping, context-loss handling)
+  charts2d/  svg.ts (scales, axes), charts.ts (section, depth-age, rates, seismicity, PREM)
+  ui/        inspector.ts, table.ts, analysis.ts, dom.ts
+```
+
+The globe draws 14–17 calls per frame and renders only when something changes (0 frames while idle).
 
 ## Development
 
 ```sh
 npm install
 npx vite --port 5299   # http://localhost:5299/
-npm test               # coordinates, slab stories, data file checks
+npm test               # 28 tests: data files and validators, PREM against published values, geodesy, sections,
+                       # b-value on a synthetic sample, regression, URL state, CSV parsing
+npm run test:py        # build_atlas.py conventions (9999, age order, periods)
 npm run build          # typecheck + production build
 npm run shots          # regenerate docs/img/*.png and the social image (needs Google Chrome)
 ```
 
-Pushes to `main` run the tests and the build and deploy to Cloudflare Pages when the repository secret
-`CLOUDFLARE_API_TOKEN` is set.
+Pushes to `main` run both test suites and the build, then deploy to Cloudflare Pages.
 
 Code: MIT. Part of [Bristlecone Lab](https://bristleconelab.org); see also
 [Ocean Life Atlas](https://oceanlife.bristleconelab.org) and [Global Seismicity Atlas](https://seismicityatlas.org).
