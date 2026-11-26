@@ -12,9 +12,11 @@
   <meta property="og:url" content="https://underworld.bristleconelab.org/">
   <meta property="og:image" content="https://underworld.bristleconelab.org/og-image.png">
   <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Underworld 3D","url":"https://underworld.bristleconelab.org/","applicationCategory":"EducationalApplication","operatingSystem":"Any (web browser with WebGL)","isAccessibleForFree":true,"description":"3D workbench for subducted slabs in the mantle: the 100 slabs of the Atlas of the Underworld, Slab2 slab geometry, thickness and uncertainty, M5+ earthquakes, PB2002 plate boundaries and PREM, with great-circle cross-sections, depth-age regression, b-values and data export.","publisher":{"@type":"Organization","name":"Bristlecone Lab","url":"https://bristleconelab.org"},"isBasedOn":["https://doi.org/10.1016/j.tecto.2017.10.004","https://doi.org/10.5066/F7PV6JNV","https://doi.org/10.5066/F7MS3QZH","https://doi.org/10.1029/2001GC000252"],"license":"https://opensource.org/licenses/MIT"}</script>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%230b0e1a' stroke='%237fd3ff' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23b5482a'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23f0c04a'/%3E%3C/svg%3E">
 </head>
 <body>
+  <noscript><p style="padding:80px 20px;color:#e9ecf4">Underworld 3D needs JavaScript and WebGL. The slab catalogue is readable without them: <a href="/slabs/" style="color:#7fc8ff">all 100 slabs of the Atlas of the Underworld</a>.</p></noscript>
   <div id="globe" aria-label="3D Earth. Drag to rotate, scroll to zoom, right-drag to pan. Click a slab, an earthquake or a Slab2 surface to inspect it."></div>
 
   <header class="topbar" data-occludes>
@@ -188,7 +190,7 @@
       <li><b>Atlas ages.</b> Base age = onset of subduction of the slab's oldest part, top age = end of subduction (0 Ma = ongoing). Both are ranges [young–old]. Sinking rate = depth ÷ mean age (km/Myr = mm/yr) under the Atlas's assumption of vertical sinking.</li>
       <li><b>Back-advection.</b> z(t) = max(0, z − v·t) for top and base with the Atlas rates. It moves slabs only vertically; plate motion and palaeogeography are not reconstructed, and the surface image stays present-day.</li>
       <li><b>Seismicity.</b> M₀ = 10^(1.5M + 9.1) N·m; b-value by maximum likelihood (Aki 1965, Utsu binning correction), Mc by maximum curvature + 0.2, σ after Shi &amp; Bolt (1982). mb and Ms saturate, so moment sums using them are lower bounds; the share of Mw-type magnitudes is reported.</li>
-      <li><b>Distance to Slab2.</b> Signed distance from the nearest Slab2 node's tangent plane (positive above the slab top). An event within that node's 1σ depth uncertainty is “at the slab top”; deeper than that but within the Slab2 thickness, “inside the slab”. Slab2 is thinned to 0.2°; dip and down-dip azimuth are computed from the depth gradient.</li>
+      <li><b>Distance to Slab2.</b> Signed distance from the nearest Slab2 node's tangent plane (positive above the slab top). An event within that node's 1σ depth uncertainty is “at the slab top”; deeper than that but within the Slab2 thickness, “inside the slab”. Slab2 is thinned to 0.2°; dip and strike are Slab2's own grids (down-dip azimuth = strike + 90°), which agree with dips recomputed from the depth grid to 0.04° on average.</li>
       <li><b>PREM.</b> Dziewonski &amp; Anderson (1981), isotropic; gravity and pressure integrated from density (centre 364 GPa, CMB 135.8 GPa).</li>
     </ul>
     <h3>Data</h3>
@@ -201,7 +203,7 @@
     </ul>
     <h3>Not included, and why</h3>
     <p>Seismic tomography models, focal mechanisms (Global CMT), volcano catalogues (Smithsonian GVP), LLSVP outlines and palaeogeographic reconstructions are not shown: their reuse terms are either not stated or limited to non-commercial use, or (reconstructions) they need a plate model this site does not yet carry.</p>
-    <p>Code: <a href="https://github.com/bristleconelab/underworld-3d">github.com/bristleconelab/underworld-3d</a> (MIT). Part of <a href="https://bristleconelab.org">Bristlecone Lab</a>.</p>
+    <p>Text pages: <a href="/slabs/">the slab catalogue</a>, one page per slab. Code: <a href="https://github.com/bristleconelab/underworld-3d">github.com/bristleconelab/underworld-3d</a> (MIT). Part of <a href="https://bristleconelab.org">Bristlecone Lab</a>.</p>
   </dialog>
 
   <dialog id="ctxlost"><h2>Graphics context lost</h2><p>The browser stopped the 3D view (GPU reset or memory pressure). Reload to continue; the permalink keeps your view.</p><button class="btn" onclick="location.reload()">Reload</button></dialog>

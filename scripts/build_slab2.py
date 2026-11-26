@@ -5,8 +5,11 @@ https://doi.org/10.5066/F7PV6JNV (public domain / CC0). The *_dep_*.grd files (G
 y = lat, z = depth in km, negative down, NaN outside the slab) arrive as data-raw/slab2_bundle.json (base64), collected
 in the browser because ScienceBase answers scripts with a bot check. The thickness (*_thk_*.grd, km, perpendicular to
 the slab) and depth-uncertainty (*_unc_*.grd, km, 1 sigma) grids, on the same nodes as the depth grids, arrive the same
-way as data-raw/slab2_thk_unc_bundle.json (each file with its SHA-256). Dip and down-dip azimuth are computed here from
-the depth gradient (the same definition Slab2 uses for its dip/str grids, which are not loaded).
+way as data-raw/slab2_thk_unc_bundle.json, and the dip (*_dip_*.grd, deg) and strike (*_str_*.grd, deg, slab dipping
+to the right: down-dip azimuth = strike + 90) grids as data-raw/slab2_dip_str_bundle.json, each file with its SHA-256.
+Dip and down-dip azimuth come from Slab2's grids. As a cross-check the build also computes them from the depth gradient
+and fails if they disagree (99th percentile of |dip difference| > 3 deg); the agreement per zone is in index.json
+(2026-11-26: mean |difference| 0.04 deg over 1,020,954 nodes).
 
 Per zone file (little-endian): float32 xyz * nv, float32 depth_km * nv, float32 dip_deg * nv, float32 dipAz_deg * nv
 (direction of increasing depth, clockwise from north; strike = dipAz - 90), float32 thickness_km * nv,
@@ -19,7 +22,8 @@ index.json also lists, for each Atlas slab whose top reaches the upper mantle (<
 within MATCH_KM of its midpoint or surface record and the mean down-dip azimuth there (used to cut the section
 along dip).
 
-usage: uv run --with h5py --with numpy python scripts/build_slab2.py [data-raw/slab2_bundle.json] [data-raw/slab2_thk_unc_bundle.json]
+usage: uv run --with h5py --with numpy python scripts/build_slab2.py [dep bundle] [thk/unc bundle] [dip/str bundle]
+(defaults: data-raw/slab2_bundle.json, data-raw/slab2_thk_unc_bundle.json, data-raw/slab2_dip_str_bundle.json)
 """
 from __future__ import annotations
 
@@ -97,8 +101,11 @@ def read_grd(b64: str):
 def main() -> None:
     src = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("data-raw/slab2_bundle.json")
     src2 = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("data-raw/slab2_thk_unc_bundle.json")
-    raw, raw2 = src.read_bytes(), src2.read_bytes()
+    src3 = Path(sys.argv[3]) if len(sys.argv) > 3 else Path("data-raw/slab2_dip_str_bundle.json")
+    raw, raw2, raw3 = src.read_bytes(), src2.read_bytes(), src3.read_bytes()
     bundle, extra = json.loads(raw), {z["id"]: z for z in json.loads(raw2)["zones"]}
+    for z in json.loads(raw3)["zones"]:
+        extra.setdefault(z["id"], {"files": {}})["files"].update(z["files"])
     for z in extra.values():
         for name, f in z["files"].items():
             if hashlib.sha256(base64.b64decode(f["b64"])).hexdigest() != f["sha256"]:
@@ -114,10 +121,10 @@ def main() -> None:
             continue
         x, y, zz = read_grd(dep["b64"])
         grids = {}
-        for kind in ("thk", "unc"):
+        for kind in ("thk", "unc", "dip", "str"):
             f = next((v for k, v in extra.get(z["id"], {"files": {}})["files"].items() if f"_{kind}_" in k), None)
             if not f:
-                raise SystemExit(f"{z['title']}: no {kind} grid in {src2}")
+                raise SystemExit(f"{z['title']}: no {kind} grid in {src2} / {src3}")
             gx, gy, g = read_grd(f["b64"])
             if gx.shape != x.shape or gy.shape != y.shape or not (np.allclose(gx, x) and np.allclose(gy, y)):
                 raise SystemExit(f"{z['title']}: {kind} grid is not on the depth grid's nodes")
@@ -125,8 +132,19 @@ def main() -> None:
         lon_full = np.where(x > 180, x - 360, x)
         depth_full = -zz  # Slab2 stores depth as negative km
         gx, gy = gradient(x, y, depth_full)  # use the unwrapped 0..360 longitudes for differences
-        dip_full = np.degrees(np.arctan(np.hypot(gx, gy)))
-        az_full = np.degrees(np.arctan2(gx, gy)) % 360
+        cdip, caz = np.degrees(np.arctan(np.hypot(gx, gy))), np.degrees(np.arctan2(gx, gy)) % 360
+        inside = np.isfinite(depth_full)
+        if not (np.isfinite(grids["dip"][inside]).all() and np.isfinite(grids["str"][inside]).all()):
+            raise SystemExit(f"{z['title']}: dip/str missing at a depth node")
+        dip_full = grids["dip"]
+        az_full = np.where(grids["dip"] > 0, (grids["str"] + 90) % 360, np.nan)
+        both = inside & np.isfinite(cdip)
+        ddip = np.abs(cdip[both] - dip_full[both])
+        daz = np.abs((caz[both] - az_full[both] + 180) % 360 - 180)[dip_full[both] > 5]
+        check = {"nodes": int(both.sum()), "dipMaeDeg": round(float(ddip.mean()), 3), "dipP99Deg": round(float(np.percentile(ddip, 99)), 2),
+                 "azP95Deg": round(float(np.percentile(daz, 95)), 2) if daz.size else None}
+        if check["dipP99Deg"] > 3:
+            raise SystemExit(f"{z['title']}: Slab2 dip and the depth-gradient dip disagree: {check}")
         dx = abs(float(x[1] - x[0]))
         k = max(1, round(STEP / dx))
         sl = (slice(None, None, k), slice(None, None, k))
@@ -142,7 +160,7 @@ def main() -> None:
                       "dipMedianDeg": round(float(np.median(dipv[d > 0])), 1),
                       "thkKm": [round(float(thkv.min()), 1), round(float(np.median(thkv)), 1), round(float(thkv.max()), 1)],
                       "uncKm": [round(float(uncv.min()), 1), round(float(np.median(uncv)), 1), round(float(uncv.max()), 1)],
-                      "thkDefault": bool(np.all(thkv == 100.0))})
+                      "thkDefault": bool(np.all(thkv == 100.0)), "gradientCheck": check})
     zones.sort(key=lambda z: z["name"])
 
     # cross-reference with the Atlas slabs that reach the upper mantle
@@ -165,7 +183,9 @@ def main() -> None:
             atlas[s["abbr"]] = {"zone": best[0], "distKm": round(best[1]), "dipAz": None if best[2] is None else round(best[2], 1),
                                 "azConsistency": round(best[3], 2)}
     (OUT / "index.json").write_text(json.dumps({
-        "source": bundle["source"], "sourceSha256": hashlib.sha256(raw).hexdigest(), "thkUncSha256": hashlib.sha256(raw2).hexdigest(), "stepDeg": STEP,
+        "source": bundle["source"], "sourceSha256": hashlib.sha256(raw).hexdigest(), "thkUncSha256": hashlib.sha256(raw2).hexdigest(),
+        "dipStrSha256": hashlib.sha256(raw3).hexdigest(), "stepDeg": STEP,
+        "dipSource": "Slab2 dip and str grids (down-dip azimuth = strike + 90); gradientCheck = agreement with dip/azimuth computed from the depth grid",
         "layout": "f32 xyz*nv | f32 depth_km*nv | f32 dip_deg*nv | f32 dipAz_deg*nv (-1 = undefined) | f32 thickness_km*nv | f32 depth_unc_km*nv | u32 tri*nt*3",
         "zones": zones, "atlas": atlas, "matchKm": MATCH_KM,
     }, indent=0))

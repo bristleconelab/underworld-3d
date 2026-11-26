@@ -65,7 +65,7 @@ Deep links, for example `#slab=TKH&tab=section`, `#slab=In&tab=depthage`,
 | Layer | Source | Licence |
 |---|---|---|
 | Slab remnants: midpoint, top/base depth ± error, onset/end age ranges, sinking rates ± σ, geological record | van der Meer, van Hinsbergen & Spakman (2018) *Atlas of the underworld*, Tectonophysics 723, [doi:10.1016/j.tecto.2017.10.004](https://doi.org/10.1016/j.tecto.2017.10.004); 2019 table from [atlas-of-the-underworld.org](https://www.atlas-of-the-underworld.org) | CC BY 4.0 (article) |
-| Slab-top depth, slab thickness, depth uncertainty (27 zones) | Hayes (2018) Slab2, USGS, [doi:10.5066/F7PV6JNV](https://doi.org/10.5066/F7PV6JNV) | public domain |
+| Slab-top depth, thickness, depth uncertainty, dip, strike (27 zones) | Hayes (2018) Slab2, USGS, [doi:10.5066/F7PV6JNV](https://doi.org/10.5066/F7PV6JNV) | public domain |
 | Earthquakes M≥5 since 1973 | USGS ComCat, [FDSN event service](https://earthquake.usgs.gov/fdsnws/event/1/), [doi:10.5066/F7MS3QZH](https://doi.org/10.5066/F7MS3QZH) | public domain |
 | Plate boundaries, step classes, relative velocities | Bird (2003) PB2002, [doi:10.1029/2001GC000252](https://doi.org/10.1029/2001GC000252); GeoJSON by H. Ahlenius, [fraxen/tectonicplates](https://github.com/fraxen/tectonicplates) | ODC-BY 1.0 |
 | Reference Earth | Dziewonski & Anderson (1981) PREM, [doi:10.1016/0031-9201(81)90046-7](https://doi.org/10.1016/0031-9201(81)90046-7) | published model |
@@ -91,13 +91,15 @@ Each output records the SHA-256 of the raw input it was built from (`sourceSha25
   `npm run data:quakes`. 27 events located above sea level are set to 0 km and counted.
 - `plates/` (3.1 MB, 27 zones, 109,418 triangles) — `npm run data:slab2`. Depth, thickness (km, perpendicular to the
   slab) and depth-uncertainty (km, 1σ) grids, which share the same nodes, thinned to 0.2°; cells with three of four
-  corners inside the slab keep one triangle, so edges follow the outline. Dip and down-dip azimuth per node from the
-  depth gradient. Pamir, Himalaya, Halmahera and Hindu Kush carry Slab2's default thickness of 100 km everywhere
+  corners inside the slab keep one triangle, so edges follow the outline. Dip and down-dip azimuth (strike + 90°) per
+  node from Slab2's dip and str grids. The build recomputes both from the depth grid as a check and stops if they
+  disagree: over 1,020,954 full-resolution nodes the mean |dip difference| is 0.04° (99% within 0.93°) and 95% of
+  azimuths agree within 0.96° (`gradientCheck` per zone; largest in Sumatra–Java, mean 0.33°). Pamir, Himalaya, Halmahera and Hindu Kush carry Slab2's default thickness of 100 km everywhere
   (`thkDefault` in `index.json`; the page says so). `index.json` links Atlas slabs above 660 km to the nearest zone
   within 400 km with the mean down-dip azimuth and its circular consistency R. ScienceBase answers scripts with a bot
   check, so the grids were fetched inside a normal browser session into `data-raw/slab2_bundle.json` (depth) and
-  `data-raw/slab2_thk_unc_bundle.json` (thickness and uncertainty, each file with the SHA-256 computed in the browser
-  and re-checked by the build; not committed).
+  `data-raw/slab2_thk_unc_bundle.json` (thickness, uncertainty) and `data-raw/slab2_dip_str_bundle.json` (dip,
+  strike), each file with the SHA-256 computed in the browser and re-checked by the build; not committed.
 - `pb2002.bin` (113 KB, 5,824 steps) — `npm run data:boundaries`.
 
 ## Method notes and limits

@@ -64,6 +64,7 @@ export function slabCard(ctx: Ctx, s: Slab) {
     btn('Cross-section', () => ctx.inspectSlab(s.abbr), 'btn small'),
     s.surface ? btn('Fly to geological record', () => globe.flyTowards(s.surface![0], s.surface![1], 2.2)) : null,
     btn('Depth–age plot', () => store.set({ dock: true, tab: 'depthage' })),
+    el('a', { class: 'btn small ghost', href: `/slabs/${s.name.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}/` }, 'Text page'),
     btn(inCmp ? 'Remove from compare' : 'Add to compare', () => {
       const c = store.state.compare.filter((a) => a !== s.abbr);
       store.set({ compare: inCmp ? c : [...c, s.abbr].slice(-3) });
@@ -116,5 +117,5 @@ export function plateCard(ctx: Ctx, h: PlateHit) {
   const links = el('p', { class: 'fine' }, linked.length ? 'Atlas slabs linked to this zone: ' : 'No Atlas slab linked to this zone.');
   for (const a of linked) { const b = el('button', { class: 'link' }, a); b.addEventListener('click', () => ctx.inspectSlab(a)); links.append(b, ' '); }
   openInspector(ctx, h.zone, 'Slab2 slab-top surface', [table(rows), links,
-    el('p', { class: 'fine src' }, 'Source: Slab2 (Hayes 2018, public domain) depth, thickness and uncertainty grids, thinned to 0.2°. Dip and azimuth from the depth gradient at the nearest node.')]);
+    el('p', { class: 'fine src' }, 'Source: Slab2 (Hayes 2018, public domain) depth, thickness, uncertainty, dip and strike grids, thinned to 0.2°; values at the nearest node.')]);
 }

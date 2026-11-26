@@ -93,6 +93,12 @@ describe('plates (Slab2)', () => {
     }
     expect(plates.zones.filter((z) => z.thkDefault).map((z) => z.name).sort()).toEqual(['Halmahera', 'Himalaya', 'Hindu Kush', 'Pamir']);
   });
+  it('uses Slab2 dip/strike, which agree with dips recomputed from the depth grid', () => {
+    for (const z of plates.zones as unknown as { name: string; gradientCheck: { dipMaeDeg: number; dipP99Deg: number } }[]) {
+      expect(z.gradientCheck.dipMaeDeg, z.name).toBeLessThan(0.5);
+      expect(z.gradientCheck.dipP99Deg, z.name).toBeLessThan(3);
+    }
+  });
   it('cross-references Atlas slabs with plausible down-dip directions', () => {
     // Tonga-Kermadec dips west, Cascadia east, Java north, Mariana west
     const az = (a: string) => plates.atlas[a].dipAz!;

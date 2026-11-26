@@ -15,6 +15,7 @@
     "data:atlas": "uv run --with openpyxl python scripts/build_atlas.py",
     "data:slab2": "uv run --with h5py --with numpy python scripts/build_slab2.py",
     "shots": "node scripts/screenshots.mjs",
+    "seo": "node scripts/seo_pages.mjs",
     "data:boundaries": "python3 scripts/build_boundaries.py",
     "test:py": "cd scripts && python3 -m unittest discover -s . -p \"test_*.py\""
   },
