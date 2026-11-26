@@ -227,22 +227,27 @@ export class Globe {
       // depth extent: a radial bar from the slab's top to its base, under its middle
       const barCurve = new THREE.LineCurve3(V(toXYZ(s.mid[0], s.mid[1], s.top[0])), V(toXYZ(s.mid[0], s.mid[1], s.base[0])));
       const bar = new THREE.Mesh(new THREE.TubeGeometry(barCurve, 1, 0.0028, 6, false), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.55 }));
+      this.sliceMaterials.push(bar.material as THREE.Material);
+      const extras: THREE.Object3D[] = [bar];
       // the way down: from where the rocks record the subduction at the surface to where the slab is now
-      const a = V(toXYZ(s.surface[0], s.surface[1], 0)), steps = 40, pts: THREE.Vector3[] = [];
-      for (let i = 0; i <= steps; i++) {
-        const f = i / steps;
-        const p = new THREE.Vector3().copy(a).lerp(mid, f).normalize();
-        pts.push(p.multiplyScalar(1 - (f * s.mid[2]) / 6371));
+      if (s.surface) {
+        const a = V(toXYZ(s.surface[0], s.surface[1], 0)), steps = 40, pts: THREE.Vector3[] = [];
+        for (let i = 0; i <= steps; i++) {
+          const f = i / steps;
+          const p = new THREE.Vector3().copy(a).lerp(mid, f).normalize();
+          pts.push(p.multiplyScalar(1 - (f * s.mid[2]) / 6371));
+        }
+        const path = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ color, dashSize: 0.012, gapSize: 0.01, transparent: true, opacity: 0.45 }));
+        path.computeLineDistances();
+        this.sliceMaterials.push(path.material as THREE.Material);
+        extras.push(path);
       }
-      const path = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ color, dashSize: 0.012, gapSize: 0.01, transparent: true, opacity: 0.45 }));
-      path.computeLineDistances();
-      this.sliceMaterials.push(bar.material as THREE.Material, path.material as THREE.Material);
       const hit = new THREE.Mesh(hitGeo, hitMat);
       hit.position.copy(mid);
       hit.userData.slab = s;
       this.hitTargets.push(hit);
-      g.add(mesh, bar, path, hit);
-      this.slabMarkers.push({ slab: s, mesh, extras: [bar, path] });
+      g.add(mesh, ...extras, hit);
+      this.slabMarkers.push({ slab: s, mesh, extras });
     }
     this.groups.set('slabs', g);
     this.scene.add(g);

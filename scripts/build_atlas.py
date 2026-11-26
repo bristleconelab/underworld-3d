@@ -47,6 +47,12 @@ def num(v, end: int | None = None):
     return round(float(v), 2)
 
 
+def pair(a, b):
+    """Two numbers, or None when the source has none: 9999 there means "not estimated" (Maldives has no ages and
+    no surface record)."""
+    return None if a is None or b is None or a >= 9999 or b >= 9999 else [a, b]
+
+
 def main() -> None:
     src = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("data-raw/Atlas_of_the_Underworld_data.xlsx")
     if not src.exists():
@@ -65,12 +71,12 @@ def main() -> None:
             "name": nice_name(str(d["name"])),
             "abbr": str(d["abbr"]),
             "mid": [num(d["mid_lon"]), num(d["mid_lat"]), num(d["mid_depth"])],
-            "surface": [num(d["geo_lon"]), num(d["geo_lat"])],
+            "surface": pair(num(d["geo_lon"]), num(d["geo_lat"])),
             "top": [num(d["top_depth"]), num(d["top_err"])],
             "base": [num(d["base_depth"]), num(d["base_err"])],
             # Ma: when the deepest part went down (base) and when the shallowest part went down (top; 0 = still going)
-            "ageBase": [num(d["base_age_min"], 0), num(d["base_age_max"], 1)],
-            "ageTop": [num(d["top_age_min"], 0), num(d["top_age_max"], 1)],
+            "ageBase": pair(num(d["base_age_min"], 0), num(d["base_age_max"], 1)),
+            "ageTop": pair(num(d["top_age_min"], 0), num(d["top_age_max"], 1)),
             # average sinking rate, mm/yr; 9999 in the source = not estimated
             "rate": [None if (x := num(d[k])) is None or x >= 9999 else x for k in ("base_rate", "top_rate")],
         }

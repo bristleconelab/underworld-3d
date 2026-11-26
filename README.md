@@ -51,7 +51,8 @@ Stored files (`public/data/`, 3.1 MB):
 
 - `slabs.json` (18 KB) from `npm run data:atlas`. Three Telkhinia slabs give ages as geological periods; they are
   converted with the ICS 2023 chart (Triassic 251.9–201.4 Ma, Early Cretaceous 145.0–100.5 Ma) and flagged on the
-  page. A sinking rate of 9999 in the source means "not estimated".
+  page. A 9999 in the source means "not estimated" and is stored as null: some sinking rates, and the ages and
+  surface record of the Maldives slab.
 - `quakes.bin` (877 KB, 10 bytes per event) from `npm run data:quakes`, fetched in 5-year windows below the API limit.
 - `plates/` (2.2 MB, 27 zones, 107,242 triangles) from `npm run data:slab2`: Slab2 depth grids thinned to 0.2°.
   ScienceBase answers scripts with a bot check, so the 27 depth grids were collected in a normal browser session into

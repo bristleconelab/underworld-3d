@@ -32,12 +32,19 @@ describe('quakes', () => {
 // rows as built from the Atlas table (Aegean and Algeria, 2019 update)
 const aegean: Slab = { name: 'Aegean', abbr: 'Aeg', mid: [27, 41, 700], surface: [24, 35.5], top: [0, 0], base: [1400, 100], ageBase: [100, 120], ageTop: [0, 0], rate: [12.73, 27.8] };
 const algeria: Slab = { name: 'Algeria', abbr: 'Ag', mid: [7, 24, 1900], surface: [20, 41], top: [1400, 100], base: [2400, 200], ageBase: [170, 180], ageTop: [120, 140], rate: [13.71, 10.77] };
+// 9999 ("not estimated") in every age and surface column of the table
+const maldives: Slab = { name: 'Maldives', abbr: 'Md', mid: [71, 13, 1625], surface: null, top: [1250, 100], base: [2000, 200], ageBase: null, ageTop: null, rate: [null, 0] };
 
 describe('slab stories', () => {
   it('tells active and finished slabs apart', () => {
     expect(isActive(aegean)).toBe(true); expect(isActive(algeria)).toBe(false);
     expect(sinkingStory(aegean)).toBe('It has been going down since about 120 million years ago, and still is.');
     expect(sinkingStory(algeria)).toBe('It went down between about 180 and 120 million years ago.');
+  });
+  it('says so when the Atlas has no ages for a slab', () => {
+    expect(isActive(maldives)).toBe(false);
+    expect(sinkingStory(maldives)).toBe('The Atlas gives no estimate of when it went down.');
+    expect(sinkingAt(maldives, 100)).toBe(false);
   });
   it('knows when a slab was going down', () => {
     expect(sinkingAt(algeria, 150)).toBe(true); expect(sinkingAt(algeria, 100)).toBe(false); expect(sinkingAt(aegean, 0)).toBe(true);
