@@ -3,12 +3,15 @@
 Source: Hayes, G., 2018, Slab2 - A Comprehensive Subduction Zone Geometry Model: U.S. Geological Survey data release,
 https://doi.org/10.5066/F7PV6JNV (public domain / CC0). The *_dep_*.grd files (GMT netCDF-4: x = lon 0..360,
 y = lat, z = depth in km, negative down, NaN outside the slab) arrive as data-raw/slab2_bundle.json (base64), collected
-in the browser because ScienceBase answers scripts with a bot check. Only the dep grids are in the bundle; Slab2's
-dip/str/thk/unc grids are not, so dip and down-dip azimuth are computed here from the depth gradient (the same
-definition Slab2 uses) and thickness/uncertainty are not shown.
+in the browser because ScienceBase answers scripts with a bot check. The thickness (*_thk_*.grd, km, perpendicular to
+the slab) and depth-uncertainty (*_unc_*.grd, km, 1 sigma) grids, on the same nodes as the depth grids, arrive the same
+way as data-raw/slab2_thk_unc_bundle.json (each file with its SHA-256). Dip and down-dip azimuth are computed here from
+the depth gradient (the same definition Slab2 uses for its dip/str grids, which are not loaded).
 
 Per zone file (little-endian): float32 xyz * nv, float32 depth_km * nv, float32 dip_deg * nv, float32 dipAz_deg * nv
-(direction of increasing depth, clockwise from north; strike = dipAz - 90), uint32 triangle indices * nt*3.
+(direction of increasing depth, clockwise from north; strike = dipAz - 90), float32 thickness_km * nv,
+float32 depth_unc_km * nv, uint32 triangle indices * nt*3. Four zones (Pamir, Himalaya, Halmahera, Hindu Kush) carry
+Slab2's default thickness of 100 km everywhere; index.json flags them thkDefault.
 Grids are thinned to about STEP degrees. A cell becomes two triangles when all four corners are inside the slab and
 one triangle when three are, so the edges follow the slab outline instead of a staircase.
 
@@ -16,7 +19,7 @@ index.json also lists, for each Atlas slab whose top reaches the upper mantle (<
 within MATCH_KM of its midpoint or surface record and the mean down-dip azimuth there (used to cut the section
 along dip).
 
-usage: uv run --with h5py --with numpy python scripts/build_slab2.py [data-raw/slab2_bundle.json]
+usage: uv run --with h5py --with numpy python scripts/build_slab2.py [data-raw/slab2_bundle.json] [data-raw/slab2_thk_unc_bundle.json]
 """
 from __future__ import annotations
 
@@ -54,7 +57,7 @@ def gradient(lon: np.ndarray, lat: np.ndarray, dep: np.ndarray):
             return np.nanmean(gx, axis=2), np.nanmean(gy, axis=2)
 
 
-def mesh(lon: np.ndarray, lat: np.ndarray, dep: np.ndarray, dip: np.ndarray, az: np.ndarray):
+def mesh(lon: np.ndarray, lat: np.ndarray, dep: np.ndarray, dip: np.ndarray, az: np.ndarray, thk: np.ndarray, unc: np.ndarray):
     ok = np.isfinite(dep)
     ids = -np.ones(dep.shape, dtype=np.int64)
     ids[ok] = np.arange(ok.sum())
@@ -74,7 +77,10 @@ def mesh(lon: np.ndarray, lat: np.ndarray, dep: np.ndarray, dip: np.ndarray, az:
     tri = np.concatenate(tris).astype("<u4")
     dipv = np.nan_to_num(dip[ok], nan=0.0).astype("<f4")
     azv = np.nan_to_num(az[ok], nan=-1.0).astype("<f4")
-    return xyz, d.astype("<f4"), dipv, azv, tri, lo[ok], la[ok]
+    thkv, uncv = thk[ok].astype("<f4"), unc[ok].astype("<f4")
+    if not (np.isfinite(thkv).all() and np.isfinite(uncv).all()):
+        raise SystemExit("thk/unc missing at a depth node")
+    return xyz, d.astype("<f4"), dipv, azv, thkv, uncv, tri, lo[ok], la[ok]
 
 
 def gc_km(lon1, lat1, lon2, lat2):
@@ -83,10 +89,20 @@ def gc_km(lon1, lat1, lon2, lat2):
     return 2 * R_KM * np.arcsin(np.sqrt(np.clip(h, 0, 1)))
 
 
+def read_grd(b64: str):
+    with h5py.File(io.BytesIO(base64.b64decode(b64)), "r") as h:
+        return np.asarray(h["x"], dtype="f8"), np.asarray(h["y"], dtype="f8"), np.asarray(h["z"], dtype="f8")
+
+
 def main() -> None:
     src = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("data-raw/slab2_bundle.json")
-    raw = src.read_bytes()
-    bundle = json.loads(raw)
+    src2 = Path(sys.argv[2]) if len(sys.argv) > 2 else Path("data-raw/slab2_thk_unc_bundle.json")
+    raw, raw2 = src.read_bytes(), src2.read_bytes()
+    bundle, extra = json.loads(raw), {z["id"]: z for z in json.loads(raw2)["zones"]}
+    for z in extra.values():
+        for name, f in z["files"].items():
+            if hashlib.sha256(base64.b64decode(f["b64"])).hexdigest() != f["sha256"]:
+                raise SystemExit(f"{name}: SHA-256 does not match the value recorded in the browser")
     OUT.mkdir(parents=True, exist_ok=True)
     for f in OUT.glob("*.bin"):
         f.unlink()
@@ -96,8 +112,16 @@ def main() -> None:
         if not dep:
             skipped.append(z["title"])
             continue
-        with h5py.File(io.BytesIO(base64.b64decode(dep["b64"])), "r") as h:
-            x, y, zz = np.asarray(h["x"], dtype="f8"), np.asarray(h["y"], dtype="f8"), np.asarray(h["z"], dtype="f8")
+        x, y, zz = read_grd(dep["b64"])
+        grids = {}
+        for kind in ("thk", "unc"):
+            f = next((v for k, v in extra.get(z["id"], {"files": {}})["files"].items() if f"_{kind}_" in k), None)
+            if not f:
+                raise SystemExit(f"{z['title']}: no {kind} grid in {src2}")
+            gx, gy, g = read_grd(f["b64"])
+            if gx.shape != x.shape or gy.shape != y.shape or not (np.allclose(gx, x) and np.allclose(gy, y)):
+                raise SystemExit(f"{z['title']}: {kind} grid is not on the depth grid's nodes")
+            grids[kind] = g
         lon_full = np.where(x > 180, x - 360, x)
         depth_full = -zz  # Slab2 stores depth as negative km
         gx, gy = gradient(x, y, depth_full)  # use the unwrapped 0..360 longitudes for differences
@@ -106,16 +130,19 @@ def main() -> None:
         dx = abs(float(x[1] - x[0]))
         k = max(1, round(STEP / dx))
         sl = (slice(None, None, k), slice(None, None, k))
-        xyz, d, dipv, azv, tris, vlon, vlat = mesh(lon_full[::k], y[::k], depth_full[sl], dip_full[sl], az_full[sl])
+        xyz, d, dipv, azv, thkv, uncv, tris, vlon, vlat = mesh(lon_full[::k], y[::k], depth_full[sl], dip_full[sl], az_full[sl], grids["thk"][sl], grids["unc"][sl])
         if len(tris) == 0:
             skipped.append(z["title"])
             continue
         name = z["title"].replace(" Region", "")
         fname = name.lower().replace(" ", "-").replace("/", "-") + ".bin"
-        (OUT / fname).write_bytes(xyz.tobytes() + d.tobytes() + dipv.tobytes() + azv.tobytes() + tris.tobytes())
+        (OUT / fname).write_bytes(xyz.tobytes() + d.tobytes() + dipv.tobytes() + azv.tobytes() + thkv.tobytes() + uncv.tobytes() + tris.tobytes())
         verts[name] = (vlon, vlat, azv)
         zones.append({"name": name, "file": fname, "nv": int(len(d)), "nt": int(len(tris)), "maxDepthKm": round(float(np.nanmax(d))),
-                      "dipMedianDeg": round(float(np.median(dipv[d > 0])), 1)})
+                      "dipMedianDeg": round(float(np.median(dipv[d > 0])), 1),
+                      "thkKm": [round(float(thkv.min()), 1), round(float(np.median(thkv)), 1), round(float(thkv.max()), 1)],
+                      "uncKm": [round(float(uncv.min()), 1), round(float(np.median(uncv)), 1), round(float(uncv.max()), 1)],
+                      "thkDefault": bool(np.all(thkv == 100.0))})
     zones.sort(key=lambda z: z["name"])
 
     # cross-reference with the Atlas slabs that reach the upper mantle
@@ -138,8 +165,8 @@ def main() -> None:
             atlas[s["abbr"]] = {"zone": best[0], "distKm": round(best[1]), "dipAz": None if best[2] is None else round(best[2], 1),
                                 "azConsistency": round(best[3], 2)}
     (OUT / "index.json").write_text(json.dumps({
-        "source": bundle["source"], "sourceSha256": hashlib.sha256(raw).hexdigest(), "stepDeg": STEP,
-        "layout": "f32 xyz*nv | f32 depth_km*nv | f32 dip_deg*nv | f32 dipAz_deg*nv (-1 = undefined) | u32 tri*nt*3",
+        "source": bundle["source"], "sourceSha256": hashlib.sha256(raw).hexdigest(), "thkUncSha256": hashlib.sha256(raw2).hexdigest(), "stepDeg": STEP,
+        "layout": "f32 xyz*nv | f32 depth_km*nv | f32 dip_deg*nv | f32 dipAz_deg*nv (-1 = undefined) | f32 thickness_km*nv | f32 depth_unc_km*nv | u32 tri*nt*3",
         "zones": zones, "atlas": atlas, "matchKm": MATCH_KM,
     }, indent=0))
     size = sum(f.stat().st_size for f in OUT.glob("*.bin"))

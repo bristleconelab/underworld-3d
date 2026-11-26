@@ -22,6 +22,12 @@ export const QUAKE_DEPTH_MAX = 700;
 export const SLAB2_DEPTH_MAX = 700;
 export const quakeColor = (depthKm: number) => sample(PLASMA, depthKm / QUAKE_DEPTH_MAX);
 export const slab2Color = (depthKm: number) => sample(VIRIDIS, depthKm / SLAB2_DEPTH_MAX);
+/** Slab2 colour modes: value range and colour map (viridis for depth and thickness, plasma for uncertainty). */
+export const SLAB2_MODES = {
+  depth: { label: 'Slab2 slab-top depth (km)', range: [0, 700] as [number, number], map: VIRIDIS },
+  thk: { label: 'Slab2 slab thickness (km)', range: [0, 200] as [number, number], map: VIRIDIS },
+  unc: { label: 'Slab2 depth uncertainty, 1σ (km)', range: [0, 60] as [number, number], map: PLASMA },
+} as const;
 
 /** Atlas slab status, PB2002 boundary classes: categorical colours distinguishable under deuteranopia/protanopia
  *  (Okabe-Ito palette). */

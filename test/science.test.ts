@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULTS, fromHash, toHash } from '../src/core/store';
+import { slabRelation, type SlabHit } from '../src/data/spatial';
 import { bearingDeg, descentPath, destination, fromXYZ, haversineKm, R_KM, slerp, toXYZ } from '../src/science/geodesy';
 import { earthMassKg, phaseDeflectionKm, prem, premLocal } from '../src/science/prem';
 import { endpoints, inSwath, projectLonLat, sectionFrame } from '../src/science/section';
@@ -136,11 +137,22 @@ describe('slab kinematics', () => {
 
 describe('URL state', () => {
   it('round-trips the view state', () => {
-    const s = { ...DEFAULTS, slab: 'TKH', section: { lon: 174, lat: -28, az: 281, halfLengthKm: 1800, halfWidthKm: 120 }, ve: 2, time: 150, timeMode: 'advect' as const, compare: ['In', 'Aeg'], quakes: { ...DEFAULTS.quakes, magMin: 6, depMin: 300 }, dock: true, tab: 'seismicity' as const };
+    const s = { ...DEFAULTS, slab2Color: 'unc' as const, slab: 'TKH', section: { lon: 174, lat: -28, az: 281, halfLengthKm: 1800, halfWidthKm: 120 }, ve: 2, time: 150, timeMode: 'advect' as const, compare: ['In', 'Aeg'], quakes: { ...DEFAULTS.quakes, magMin: 6, depMin: 300 }, dock: true, tab: 'seismicity' as const };
     const { patch, camera } = fromHash(toHash(s, [1, 2, 3, 0, 0, 0]));
     expect(patch.slab).toBe('TKH'); expect(patch.section).toEqual(s.section); expect(patch.ve).toBe(2);
     expect(patch.time).toBe(150); expect(patch.timeMode).toBe('advect'); expect(patch.compare).toEqual(['In', 'Aeg']);
     expect(patch.quakes!.magMin).toBe(6); expect(patch.quakes!.depMin).toBe(300); expect(patch.tab).toBe('seismicity');
+    expect(patch.slab2Color).toBe('unc');
     expect(camera).toEqual([1, 2, 3, 0, 0, 0]);
+  });
+});
+
+describe('position relative to Slab2', () => {
+  const h = (distKm: number): SlabHit => ({ zone: 'Kermadec', vertexDepth: 200, dip: 50, dipAz: 280, distKm, horizKm: 5, thkKm: 110, uncKm: 15 });
+  it('splits slab top (±1σ), inside the slab, above and below', () => {
+    expect(slabRelation(h(10))).toBe('top'); expect(slabRelation(h(-15))).toBe('top');
+    expect(slabRelation(h(30))).toBe('above');
+    expect(slabRelation(h(-60))).toBe('within'); expect(slabRelation(h(-110))).toBe('within');
+    expect(slabRelation(h(-140))).toBe('below');
   });
 });

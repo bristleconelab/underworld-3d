@@ -1,8 +1,9 @@
 {
 "source": "Hayes, G., 2018, Slab2 - A Comprehensive Subduction Zone Geometry Model: U.S. Geological Survey data release, https://doi.org/10.5066/F7PV6JNV (CC0 / US public domain)",
 "sourceSha256": "6bfdcf92e44e3e134ebacf6833f6d377b910c8cf8a46e65fe56c520f09f13275",
+"thkUncSha256": "8b8a0ae0c98c682dfd36b56166d5d552ea91e9d2d591949189d45c16fbc52f17",
 "stepDeg": 0.2,
-"layout": "f32 xyz*nv | f32 depth_km*nv | f32 dip_deg*nv | f32 dipAz_deg*nv (-1 = undefined) | u32 tri*nt*3",
+"layout": "f32 xyz*nv | f32 depth_km*nv | f32 dip_deg*nv | f32 dipAz_deg*nv (-1 = undefined) | f32 thickness_km*nv | f32 depth_unc_km*nv | u32 tri*nt*3",
 "zones": [
 {
 "name": "Alaska",
@@ -10,7 +11,18 @@
 "nv": 4393,
 "nt": 8201,
 "maxDepthKm": 262,
-"dipMedianDeg": 15.7
+"dipMedianDeg": 15.7,
+"thkKm": [
+60.7,
+83.7,
+117.0
+],
+"uncKm": [
+2.1,
+16.4,
+35.3
+],
+"thkDefault": false
 },
 {
 "name": "Calabria",
@@ -18,7 +30,18 @@
 "nv": 611,
 "nt": 1130,
 "maxDepthKm": 480,
-"dipMedianDeg": 17.8
+"dipMedianDeg": 17.8,
+"thkKm": [
+175.2,
+181.4,
+186.3
+],
+"uncKm": [
+1.1,
+10.3,
+23.4
+],
+"thkDefault": false
 },
 {
 "name": "Caribbean",
@@ -26,7 +49,18 @@
 "nv": 1333,
 "nt": 2466,
 "maxDepthKm": 180,
-"dipMedianDeg": 15.2
+"dipMedianDeg": 15.2,
+"thkKm": [
+103.2,
+112.5,
+138.0
+],
+"uncKm": [
+2.4,
+12.2,
+29.7
+],
+"thkDefault": false
 },
 {
 "name": "Cascadia",
@@ -34,7 +68,18 @@
 "nv": 1669,
 "nt": 3164,
 "maxDepthKm": 430,
-"dipMedianDeg": 27.0
+"dipMedianDeg": 27.0,
+"thkKm": [
+23.5,
+33.2,
+35.0
+],
+"uncKm": [
+4.9,
+13.2,
+37.2
+],
+"thkDefault": false
 },
 {
 "name": "Central America",
@@ -42,7 +87,18 @@
 "nv": 1924,
 "nt": 3587,
 "maxDepthKm": 382,
-"dipMedianDeg": 26.6
+"dipMedianDeg": 26.6,
+"thkKm": [
+24.5,
+49.0,
+59.1
+],
+"uncKm": [
+2.9,
+14.1,
+37.9
+],
+"thkDefault": false
 },
 {
 "name": "Cotabato",
@@ -50,7 +106,18 @@
 "nv": 95,
 "nt": 155,
 "maxDepthKm": 140,
-"dipMedianDeg": 34.7
+"dipMedianDeg": 34.7,
+"thkKm": [
+76.2,
+82.1,
+84.7
+],
+"uncKm": [
+5.0,
+13.6,
+26.9
+],
+"thkDefault": false
 },
 {
 "name": "Halmahera",
@@ -58,7 +125,18 @@
 "nv": 1409,
 "nt": 2652,
 "maxDepthKm": 676,
-"dipMedianDeg": 49.3
+"dipMedianDeg": 49.3,
+"thkKm": [
+100.0,
+100.0,
+100.0
+],
+"uncKm": [
+9.0,
+20.4,
+33.1
+],
+"thkDefault": true
 },
 {
 "name": "Hellenic Arc",
@@ -66,7 +144,18 @@
 "nv": 1946,
 "nt": 3697,
 "maxDepthKm": 444,
-"dipMedianDeg": 14.2
+"dipMedianDeg": 14.2,
+"thkKm": [
+184.8,
+188.9,
+197.6
+],
+"uncKm": [
+5.9,
+11.3,
+26.9
+],
+"thkDefault": false
 },
 {
 "name": "Himalaya",
@@ -74,7 +163,18 @@
 "nv": 737,
 "nt": 1291,
 "maxDepthKm": 40,
-"dipMedianDeg": 10.0
+"dipMedianDeg": 10.0,
+"thkKm": [
+100.0,
+100.0,
+100.0
+],
+"uncKm": [
+2.5,
+9.2,
+25.1
+],
+"thkDefault": true
 },
 {
 "name": "Hindu Kush",
@@ -82,7 +182,18 @@
 "nv": 109,
 "nt": 178,
 "maxDepthKm": 332,
-"dipMedianDeg": 60.3
+"dipMedianDeg": 60.3,
+"thkKm": [
+100.0,
+100.0,
+100.0
+],
+"uncKm": [
+11.8,
+31.5,
+54.1
+],
+"thkDefault": true
 },
 {
 "name": "Izu-Bonin",
@@ -90,7 +201,18 @@
 "nv": 2538,
 "nt": 4764,
 "maxDepthKm": 577,
-"dipMedianDeg": 36.8
+"dipMedianDeg": 36.8,
+"thkKm": [
+134.3,
+137.6,
+144.2
+],
+"uncKm": [
+2.9,
+20.1,
+38.2
+],
+"thkDefault": false
 },
 {
 "name": "Kamchatka-Kuril Islands-Japan",
@@ -98,7 +220,18 @@
 "nv": 7498,
 "nt": 14594,
 "maxDepthKm": 661,
-"dipMedianDeg": 29.7
+"dipMedianDeg": 29.7,
+"thkKm": [
+110.6,
+133.0,
+134.9
+],
+"uncKm": [
+4.1,
+15.8,
+31.6
+],
+"thkDefault": false
 },
 {
 "name": "Kermadec",
@@ -106,7 +239,18 @@
 "nv": 4346,
 "nt": 8322,
 "maxDepthKm": 700,
-"dipMedianDeg": 39.9
+"dipMedianDeg": 39.9,
+"thkKm": [
+108.6,
+117.8,
+131.7
+],
+"uncKm": [
+2.5,
+26.0,
+47.0
+],
+"thkDefault": false
 },
 {
 "name": "Makran",
@@ -114,7 +258,18 @@
 "nv": 1448,
 "nt": 2738,
 "maxDepthKm": 156,
-"dipMedianDeg": 9.0
+"dipMedianDeg": 9.0,
+"thkKm": [
+107.6,
+109.0,
+117.7
+],
+"uncKm": [
+3.5,
+6.8,
+35.8
+],
+"thkDefault": false
 },
 {
 "name": "Manila Trench",
@@ -122,7 +277,18 @@
 "nv": 489,
 "nt": 869,
 "maxDepthKm": 170,
-"dipMedianDeg": 34.7
+"dipMedianDeg": 34.7,
+"thkKm": [
+48.8,
+67.3,
+82.1
+],
+"uncKm": [
+5.7,
+14.7,
+28.9
+],
+"thkDefault": false
 },
 {
 "name": "Muertos Trough",
@@ -130,7 +296,18 @@
 "nv": 144,
 "nt": 220,
 "maxDepthKm": 99,
-"dipMedianDeg": 38.6
+"dipMedianDeg": 38.6,
+"thkKm": [
+138.7,
+139.9,
+143.6
+],
+"uncKm": [
+9.1,
+22.6,
+32.6
+],
+"thkDefault": false
 },
 {
 "name": "New Guinea",
@@ -138,7 +315,18 @@
 "nv": 961,
 "nt": 1805,
 "maxDepthKm": 168,
-"dipMedianDeg": 11.4
+"dipMedianDeg": 11.4,
+"thkKm": [
+28.4,
+68.8,
+88.2
+],
+"uncKm": [
+5.8,
+10.2,
+34.1
+],
+"thkDefault": false
 },
 {
 "name": "Pamir",
@@ -146,7 +334,18 @@
 "nv": 236,
 "nt": 409,
 "maxDepthKm": 233,
-"dipMedianDeg": 39.5
+"dipMedianDeg": 39.5,
+"thkKm": [
+100.0,
+100.0,
+100.0
+],
+"uncKm": [
+8.6,
+15.1,
+31.1
+],
+"thkDefault": true
 },
 {
 "name": "Philippines",
@@ -154,7 +353,18 @@
 "nv": 537,
 "nt": 896,
 "maxDepthKm": 228,
-"dipMedianDeg": 41.6
+"dipMedianDeg": 41.6,
+"thkKm": [
+71.3,
+101.6,
+121.5
+],
+"uncKm": [
+3.4,
+11.4,
+21.4
+],
+"thkDefault": false
 },
 {
 "name": "Puysegur",
@@ -162,7 +372,18 @@
 "nv": 189,
 "nt": 312,
 "maxDepthKm": 157,
-"dipMedianDeg": 47.9
+"dipMedianDeg": 47.9,
+"thkKm": [
+60.1,
+67.7,
+105.1
+],
+"uncKm": [
+1.9,
+10.0,
+24.2
+],
+"thkDefault": false
 },
 {
 "name": "Ryukyu",
@@ -170,7 +391,18 @@
 "nv": 2099,
 "nt": 3976,
 "maxDepthKm": 393,
-"dipMedianDeg": 30.4
+"dipMedianDeg": 30.4,
+"thkKm": [
+48.2,
+85.7,
+124.0
+],
+"uncKm": [
+2.5,
+14.7,
+58.1
+],
+"thkDefault": false
 },
 {
 "name": "Scotia Sea",
@@ -178,7 +410,18 @@
 "nv": 540,
 "nt": 985,
 "maxDepthKm": 300,
-"dipMedianDeg": 51.5
+"dipMedianDeg": 51.5,
+"thkKm": [
+58.6,
+83.7,
+97.1
+],
+"uncKm": [
+3.8,
+13.8,
+24.2
+],
+"thkDefault": false
 },
 {
 "name": "Solomon Islands",
@@ -186,7 +429,18 @@
 "nv": 1153,
 "nt": 2074,
 "maxDepthKm": 575,
-"dipMedianDeg": 39.0
+"dipMedianDeg": 39.0,
+"thkKm": [
+104.0,
+107.0,
+135.3
+],
+"uncKm": [
+2.9,
+15.3,
+50.4
+],
+"thkDefault": false
 },
 {
 "name": "South America",
@@ -194,7 +448,18 @@
 "nv": 12901,
 "nt": 25144,
 "maxDepthKm": 669,
-"dipMedianDeg": 26.5
+"dipMedianDeg": 26.5,
+"thkKm": [
+17.0,
+73.8,
+93.2
+],
+"uncKm": [
+2.7,
+17.1,
+61.6
+],
+"thkDefault": false
 },
 {
 "name": "Sulawesi",
@@ -202,7 +467,18 @@
 "nv": 282,
 "nt": 499,
 "maxDepthKm": 253,
-"dipMedianDeg": 25.6
+"dipMedianDeg": 25.6,
+"thkKm": [
+70.8,
+73.8,
+76.2
+],
+"uncKm": [
+5.2,
+11.9,
+17.1
+],
+"thkDefault": false
 },
 {
 "name": "Sumatra-Java",
@@ -210,7 +486,18 @@
 "nv": 7228,
 "nt": 13795,
 "maxDepthKm": 671,
-"dipMedianDeg": 28.0
+"dipMedianDeg": 28.0,
+"thkKm": [
+37.0,
+106.3,
+143.4
+],
+"uncKm": [
+2.6,
+16.6,
+52.0
+],
+"thkDefault": false
 },
 {
 "name": "Vanuatu",
@@ -218,7 +505,18 @@
 "nv": 829,
 "nt": 1495,
 "maxDepthKm": 339,
-"dipMedianDeg": 47.5
+"dipMedianDeg": 47.5,
+"thkKm": [
+42.4,
+68.0,
+90.6
+],
+"uncKm": [
+6.2,
+23.0,
+50.5
+],
+"thkDefault": false
 }
 ],
 "atlas": {

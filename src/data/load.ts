@@ -10,7 +10,7 @@ export interface QuakeMeta { source: string; fetched: string; count: number; mag
 export interface Data {
   slabs: Slab[]; byAbbr: Map<string, Slab>; slabSource: string; rateCheck: { abbr: string; field: string; table: number; depthOverMeanAge: number }[];
   quakes: Quakes; quakeMeta: QuakeMeta;
-  plates: PlateMesh[]; crossref: Record<string, Crossref>; slabIndex: SlabIndex | null;
+  plates: PlateMesh[]; crossref: Record<string, Crossref>; slabIndex: SlabIndex | null; thkDefault: Set<string>;
   boundaries: Boundaries | null;
   problems: string[];
 }
@@ -30,10 +30,10 @@ export async function loadCore(): Promise<Pick<Data, 'slabs' | 'byAbbr' | 'slabS
   return { slabs, byAbbr: new Map(slabs.map((s) => [s.abbr, s])), slabSource: sj.source, rateCheck: sj.rateCheck ?? [], quakes, quakeMeta: qm, problems };
 }
 
-export async function loadPlates(): Promise<Pick<Data, 'plates' | 'crossref' | 'slabIndex'>> {
-  const idx = await get('data/plates/index.json').then((r) => r.json()) as { zones: { name: string; file: string; nv: number; nt: number }[]; atlas: Record<string, Crossref> };
+export async function loadPlates(): Promise<Pick<Data, 'plates' | 'crossref' | 'slabIndex' | 'thkDefault'>> {
+  const idx = await get('data/plates/index.json').then((r) => r.json()) as { zones: { name: string; file: string; nv: number; nt: number; thkDefault?: boolean }[]; atlas: Record<string, Crossref> };
   const plates = await Promise.all(idx.zones.map(async (z) => decodePlate(z.name, await get(`data/plates/${z.file}`).then((r) => r.arrayBuffer()), z.nv, z.nt)));
-  return { plates, crossref: idx.atlas ?? {}, slabIndex: new SlabIndex(plates) };
+  return { plates, crossref: idx.atlas ?? {}, slabIndex: new SlabIndex(plates), thkDefault: new Set(idx.zones.filter((z) => z.thkDefault).map((z) => z.name)) };
 }
 
 export async function loadBoundaries(): Promise<Boundaries> {

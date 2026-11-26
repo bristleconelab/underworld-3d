@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { CSS2DObject, CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-import { BOUNDARY_COLORS, SLAB_STATUS, quakeColor, slab2Color } from '../core/colormap';
+import { BOUNDARY_COLORS, SLAB2_MODES, SLAB_STATUS, quakeColor, sample } from '../core/colormap';
 import type { LayerKey, QuakeFilter } from '../core/store';
 import type { Boundaries, PlateMesh, Quakes } from '../data/decode';
 import { descentPath, fromXYZ, R_KM, toXYZ, type Vec3 } from '../science/geodesy';
@@ -57,6 +57,7 @@ function quakeMaterial() {
   });
 }
 
+export interface PlateHit { zone: string; depthKm: number; dip: number; dipAz: number; thkKm: number; uncKm: number; lon: number; lat: number; thkDefault: boolean }
 export interface CursorInfo { lon: number; lat: number; depthKm: number; onSection: boolean }
 export interface Insets { left: number; right: number; top: number; bottom: number }
 
@@ -103,7 +104,7 @@ export class Globe {
 
   onSlab: (s: Slab | null) => void = () => {};
   onQuake: (i: number) => void = () => {};
-  onPlate: (hit: { zone: string; depthKm: number; dip: number; dipAz: number; lon: number; lat: number }) => void = () => {};
+  onPlate: (hit: PlateHit) => void = () => {};
   onHoverSlab: (s: Slab | null) => void = () => {};
   onCursor: (c: CursorInfo | null) => void = () => {};
   onView: (v: { northDeg: number; kmPerPx: number }) => void = () => {};
@@ -344,7 +345,7 @@ export class Globe {
     let vo = 0, io = 0;
     meshes.forEach((m, zi) => {
       pos.set(m.positions, vo * 3);
-      for (let i = 0; i < m.depths.length; i++) { col.set(slab2Color(m.depths[i]), (vo + i) * 3); zone[vo + i] = zi; }
+      for (let i = 0; i < m.depths.length; i++) zone[vo + i] = zi;
       for (let i = 0; i < m.index.length; i++) idx[io + i] = m.index[i] + vo;
       vo += m.depths.length; io += m.index.length;
     });
@@ -356,9 +357,26 @@ export class Globe {
     const mat = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 0.85, roughness: 0.7 });
     this.plateMesh = new THREE.Mesh(geo, mat);
     this.plateZone = zone;
+    this.setPlateColor(this.plateColorMode);
     this.sliceMats.push(mat);
     this.layers.set('slab2', this.plateMesh); this.scene.add(this.plateMesh);
     this.applyClipping(); this.invalidate();
+  }
+
+  private plateColorMode: keyof typeof SLAB2_MODES = 'depth';
+  /** Colour Slab2 by slab-top depth, slab thickness or depth uncertainty. */
+  setPlateColor(mode: keyof typeof SLAB2_MODES) {
+    this.plateColorMode = mode;
+    if (!this.plateMesh) return;
+    const attr = this.plateMesh.geometry.getAttribute('color') as THREE.BufferAttribute, col = attr.array as Float32Array;
+    const { range, map } = SLAB2_MODES[mode];
+    let o = 0;
+    for (const m of this.plateMeshes) {
+      const v = mode === 'depth' ? m.depths : mode === 'thk' ? m.thk : m.unc;
+      for (let i = 0; i < v.length; i++, o++) col.set(sample(map, (v[i] - range[0]) / (range[1] - range[0])), o * 3);
+    }
+    attr.needsUpdate = true;
+    this.invalidate();
   }
 
   setBoundaries(b: Boundaries) {
@@ -504,7 +522,8 @@ export class Globe {
     this.ndc.set(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1);
     this.ray.setFromCamera(this.ndc, this.camera);
   }
-  pickPlate(x: number, y: number) {
+  thkDefault = new Set<string>();
+  pickPlate(x: number, y: number): PlateHit | null {
     if (!this.plateMesh || !this.plateMesh.visible || !this.plateZone) return null;
     this.setRay(x, y);
     const hits = this.ray.intersectObject(this.plateMesh, false).filter((h) => this.kept(h.point, true));
@@ -512,7 +531,7 @@ export class Globe {
     const vi = h.face.a, zi = this.plateZone[vi];
     let off = 0; for (let k = 0; k < zi; k++) off += this.plateMeshes[k].depths.length;
     const m = this.plateMeshes[zi], li = vi - off, ll = fromXYZ(h.point.x, h.point.y, h.point.z);
-    return { zone: m.name, depthKm: ll.depthKm, dip: m.dip[li], dipAz: m.dipAz[li], lon: ll.lon, lat: ll.lat };
+    return { zone: m.name, depthKm: ll.depthKm, dip: m.dip[li], dipAz: m.dipAz[li], thkKm: m.thk[li], uncKm: m.unc[li], lon: ll.lon, lat: ll.lat, thkDefault: this.thkDefault.has(m.name) };
   }
   cursor(x: number, y: number): CursorInfo | null {
     this.setRay(x, y);

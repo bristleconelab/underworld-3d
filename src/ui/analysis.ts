@@ -8,6 +8,7 @@ import { download, svgToPng, toCsv, inlineStyles } from '../data/export';
 import { endpoints, inSwath, project, projectLonLat, sectionFrame, type Section } from '../science/section';
 import { toXYZ } from '../science/geodesy';
 import { depthAgePoints } from '../science/slabs';
+import { slabRelation } from '../data/spatial';
 import { $, type Ctx } from './dom';
 
 const passes = (f: QuakeFilter, m: number, d: number, y: number) => m >= f.magMin - 1e-3 && m <= f.magMax + 1e-3 && d >= f.depMin && d <= f.depMax && y >= f.yrMin && y < f.yrMax;
@@ -25,7 +26,7 @@ export function sectionData(ctx: Ctx, sec: Section, ve: number): SectionData {
   for (const m of ctx.data.plates) {
     for (let i = 0; i < m.depths.length; i++) {
       const p = project(f, [m.positions[i * 3], m.positions[i * 3 + 1], m.positions[i * 3 + 2]]);
-      if (inSwath(f, p)) slab2.push({ x: p.xKm, depth: p.depthKm });
+      if (inSwath(f, p)) slab2.push({ x: p.xKm, depth: p.depthKm, thk: m.thk[i], unc: m.unc[i], dip: m.dip[i] });
     }
   }
   const slabs: SectionData['slabs'] = [];
@@ -78,7 +79,19 @@ export function renderAnalysis(ctx: Ctx, s: State) {
       if (fr && !inSwath(fr, projectLonLat(fr, q.lon[i], q.lat[i], q.depth[i]))) continue;
       depths.push(q.depth[i]); mags.push(q.mag[i]); types.push(q.magTypes[q.magType[i]]);
     }
-    svg = seismicityChart(depths, mags, types, W, H, fr ? 'Section swath' : 'Global (filtered)');
+    // relation to Slab2 (section only: one nearest-node search per event)
+    let relation: string | undefined;
+    if (fr && ctx.data.slabIndex) {
+      const c = { top: 0, within: 0, above: 0, below: 0, none: 0 };
+      for (let i = 0; i < q.n; i++) {
+        if (!passes(f, q.mag[i], q.depth[i], q.year[i]) || !inSwath(fr, projectLonLat(fr, q.lon[i], q.lat[i], q.depth[i]))) continue;
+        const h = ctx.data.slabIndex.nearest(toXYZ(q.lon[i], q.lat[i], q.depth[i]), 150);
+        if (h) c[slabRelation(h)]++; else c.none++;
+      }
+      const n = depths.length || 1, pc = (k: number) => `${Math.round((100 * k) / n)}%`;
+      relation = `vs Slab2: top ±1σ ${pc(c.top)} · in slab ${pc(c.within)} · above ${pc(c.above)} · below ${pc(c.below)} · no Slab2 ${pc(c.none)}`;
+    }
+    svg = seismicityChart(depths, mags, types, W, H, fr ? 'Section swath' : 'Global (filtered)', relation);
   } else {
     const sl = s.slab ? ctx.data.byAbbr.get(s.slab) : null;
     svg = premChart(W, H, sl ? sl.mid[2] : null);
@@ -91,8 +104,8 @@ function sectionCsv(ctx: Ctx, sec: Section, d: SectionData): string {
   const rows: unknown[][] = [];
   for (const e of d.quakes) rows.push(['quake', e.i, e.x.toFixed(1), e.depth.toFixed(1), e.off.toFixed(1), e.mag, q.lon[e.i], q.lat[e.i], new Date(q.time[e.i] * 1000).toISOString()]);
   for (const s of d.slabs) rows.push(['atlas_slab', s.slab.abbr, s.x.toFixed(1), s.slab.mid[2], s.off.toFixed(1), '', s.slab.mid[0], s.slab.mid[1], '']);
-  for (const p of d.slab2) rows.push(['slab2_node', '', p.x.toFixed(1), p.depth.toFixed(1), '', '', '', '', '']);
-  return head + toCsv(['kind', 'id', 'x_km', 'depth_km', 'off_plane_km', 'mag', 'lon', 'lat', 'time_utc'], rows);
+  for (const p of d.slab2) rows.push(['slab2_node', '', p.x.toFixed(1), p.depth.toFixed(1), '', '', '', '', '', p.thk.toFixed(1), p.unc.toFixed(1), p.dip.toFixed(1)]);
+  return head + toCsv(['kind', 'id', 'x_km', 'depth_km', 'off_plane_km', 'mag', 'lon', 'lat', 'time_utc', 'slab2_thickness_km', 'slab2_depth_unc_km', 'slab2_dip_deg'], rows);
 }
 
 export function initAnalysis(ctx: Ctx) {

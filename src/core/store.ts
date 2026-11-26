@@ -12,6 +12,7 @@ export interface State {
   section: Section | null;
   autoAz: boolean;
   ve: number;
+  slab2Color: 'depth' | 'thk' | 'unc';
   layers: Record<LayerKey, boolean>;
   surfaceOpacity: number;
   quakes: QuakeFilter;
@@ -25,7 +26,7 @@ export interface State {
 
 export const YEAR_MAX = new Date().getUTCFullYear() + 1;
 export const DEFAULTS: State = {
-  slab: null, section: null, autoAz: true, ve: 1,
+  slab: null, section: null, autoAz: true, ve: 1, slab2Color: 'depth',
   layers: { slabs: true, slab2: true, quakes: true, boundaries: true, shells: true, graticule: false },
   surfaceOpacity: 0.35,
   quakes: { magMin: 5, magMax: 9.6, yrMin: 1973, yrMax: YEAR_MAX, depMin: 0, depMax: 800 },
@@ -62,6 +63,7 @@ export function toHash(s: State, camera?: number[]): string {
   if (s.section) p.set('sec', [r2(s.section.lon), r2(s.section.lat), r1(s.section.az), Math.round(s.section.halfLengthKm), Math.round(s.section.halfWidthKm)].join(','));
   if (s.section && !s.autoAz) p.set('az', 'manual');
   if (s.ve !== 1) p.set('ve', String(s.ve));
+  if (s.slab2Color !== 'depth') p.set('s2c', s.slab2Color);
   const lay = (Object.keys(LAYER_CODES) as LayerKey[]).filter((k) => s.layers[k]).map((k) => LAYER_CODES[k]).join('');
   if (lay !== 'spqbm') p.set('lay', lay || '-');
   if (s.surfaceOpacity !== DEFAULTS.surfaceOpacity) p.set('op', String(r2(s.surfaceOpacity)));
@@ -88,6 +90,7 @@ export function fromHash(hash: string): { patch: Partial<State>; camera?: number
   if (sec) patch.section = { lon: sec[0], lat: sec[1], az: sec[2], halfLengthKm: sec[3], halfWidthKm: sec[4] };
   if (p.get('az') === 'manual') patch.autoAz = false;
   const ve = Number(p.get('ve')); if ([1, 2, 5].includes(ve)) patch.ve = ve;
+  const s2c = p.get('s2c'); if (s2c === 'thk' || s2c === 'unc') patch.slab2Color = s2c;
   const lay = p.get('lay');
   if (lay) patch.layers = Object.fromEntries((Object.keys(LAYER_CODES) as LayerKey[]).map((k) => [k, lay.includes(LAYER_CODES[k])])) as Record<LayerKey, boolean>;
   const op = Number(p.get('op')); if (p.has('op') && op >= 0 && op <= 1) patch.surfaceOpacity = op;

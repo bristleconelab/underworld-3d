@@ -1,5 +1,6 @@
 import '@fontsource-variable/bricolage-grotesque';
 import './styles.css';
+import { PLASMA, SLAB2_MODES } from './core/colormap';
 import { fmt, latlon } from './core/format';
 import { DEFAULTS, fromHash, Store, toHash, YEAR_MAX, type LayerKey, type State } from './core/store';
 import { apa, bibtex, download, ris, slabRow, slabsGeoJson, SLAB_COLUMNS, toCsv } from './data/export';
@@ -19,7 +20,7 @@ const init = fromHash(location.hash);
 const store = new Store({ ...DEFAULTS, ...init.patch, layers: { ...DEFAULTS.layers, ...init.patch.layers } });
 const globe = new Globe($('#globe'));
 globe.onContextLost = () => ($('#ctxlost') as HTMLDialogElement).showModal();
-const data = { slabs: [], byAbbr: new Map(), plates: [], crossref: {}, slabIndex: null, boundaries: null, rateCheck: [], problems: [] } as unknown as Data;
+const data = { slabs: [], byAbbr: new Map(), plates: [], crossref: {}, slabIndex: null, thkDefault: new Set(), boundaries: null, rateCheck: [], problems: [] } as unknown as Data;
 
 const ctx: Ctx = {
   store, globe, data, sel: { quake: -1 }, toast,
@@ -61,6 +62,8 @@ function initControls() {
   btnLeft.addEventListener('click', () => { left.hidden = !left.hidden; btnLeft.setAttribute('aria-expanded', String(!left.hidden)); window.dispatchEvent(new Event('docks')); });
 
   document.querySelectorAll<HTMLInputElement>('input[data-layer]').forEach((cb) => cb.addEventListener('change', () => store.set({ layers: { ...store.state.layers, [cb.dataset.layer as LayerKey]: cb.checked } })));
+  const s2c = $<HTMLSelectElement>('#s2c');
+  s2c.addEventListener('change', () => store.set({ slab2Color: s2c.value as State['slab2Color'] }));
   const op = $<HTMLInputElement>('#opacity');
   op.addEventListener('input', () => store.set({ surfaceOpacity: Number(op.value) / 100 }));
 
@@ -242,13 +245,21 @@ function initTopbar() {
 function wire() {
   store.on(['layers'], (s) => (Object.keys(s.layers) as LayerKey[]).forEach((k) => globe.setLayer(k, s.layers[k])));
   store.on(['surfaceOpacity'], (s) => globe.setSurfaceOpacity(s.surfaceOpacity));
+  store.on(['slab2Color'], (s) => {
+    globe.setPlateColor(s.slab2Color);
+    const m = SLAB2_MODES[s.slab2Color], lg = $('#s2-legend');
+    $<HTMLSelectElement>('#s2c').value = s.slab2Color;
+    lg.querySelector('span')!.textContent = m.label;
+    (lg.querySelector('.bar') as HTMLElement).className = `bar ${m.map === PLASMA ? 'plasma' : 'viridis'}`;
+    lg.querySelectorAll('.ticks b').forEach((b, i) => (b.textContent = fmt(m.range[0] + ((m.range[1] - m.range[0]) * i) / 2)));
+  });
   store.on(['quakes'], (s) => { globe.setQuakeFilter(s.quakes); quakeCount(s); });
   store.on(['time', 'timeMode'], (s) => globe.setSlabTime(s.time, s.timeMode));
   store.on(['section'], (s) => globe.setSection(s.section ? sectionFrame(s.section) : null));
   store.on(['layers', 'surfaceOpacity', 'quakes', 'section', 'autoAz', 've', 'time', 'timeMode', 'theme', 'slab'], syncControls);
   store.on(['dock', 'tab', 'section', 've', 'quakes', 'slab', 'compare'], (s) => renderAnalysis(ctx, s));
   let t = 0;
-  store.on(['slab', 'section', 'autoAz', 've', 'layers', 'surfaceOpacity', 'quakes', 'time', 'timeMode', 'theme', 'tab', 'dock', 'compare'], (s) => {
+  store.on(['slab', 'section', 'autoAz', 've', 'slab2Color', 'layers', 'surfaceOpacity', 'quakes', 'time', 'timeMode', 'theme', 'tab', 'dock', 'compare'], (s) => {
     clearTimeout(t); t = window.setTimeout(() => history.replaceState(null, '', location.pathname + toHash(s)), 250);
   });
 }
@@ -266,7 +277,7 @@ async function main() {
   wire();
   // optional layers: when they arrive they take the current state (layer toggles, time, section clipping)
   const [plates, bounds] = await Promise.allSettled([loadPlates(), loadBoundaries()]);
-  if (plates.status === 'fulfilled') { Object.assign(data, plates.value); globe.setPlates(plates.value.plates); }
+  if (plates.status === 'fulfilled') { Object.assign(data, plates.value); globe.thkDefault = plates.value.thkDefault; globe.setPlates(plates.value.plates); }
   else { console.warn('Slab2 not loaded', plates.reason); $('input[data-layer="slab2"]').closest('li')!.remove(); }
   if (bounds.status === 'fulfilled') { data.boundaries = bounds.value; globe.setBoundaries(bounds.value); }
   else { console.warn('PB2002 not loaded', bounds.reason); $('input[data-layer="boundaries"]').closest('li')!.remove(); }

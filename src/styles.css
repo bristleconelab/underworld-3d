@@ -60,6 +60,8 @@ summary { cursor: pointer; font-weight: 650; font-size: 13px; display: flex; ali
 summary::marker { color: var(--muted); }
 .badge-n { margin-left: auto; font-weight: 500; color: var(--muted); }
 .toggles { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 4px; }
+.toggles .sub { padding-left: 22px; font-size: 12px; }
+.toggles .sub select { margin-left: 6px; font-size: 12px; }
 .toggles label, .check { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 input[type='checkbox'], input[type='radio'], input[type='range'] { accent-color: var(--accent); }
 .sw { width: 14px; height: 10px; border-radius: 2px; flex: none; }
@@ -135,6 +137,8 @@ svg.chart .ref.strong { stroke-opacity: 0.9; stroke-dasharray: none; }
 svg.chart .reflabel { fill: var(--chart-ref); font-size: 10px; font-family: var(--mono); }
 svg.chart .endlabel { fill: var(--chart-ink); font-size: 11px; font-weight: 650; font-family: var(--mono); }
 svg.chart .slab2pt { opacity: 0.8; }
+svg.chart .slab2body { stroke: #21918c; stroke-opacity: 0.10; stroke-width: 2; }
+svg.chart .slab2unc { stroke: var(--chart-ink); stroke-opacity: 0.18; stroke-width: 1; }
 svg.chart .eq { stroke: rgb(0 0 0 / 0.45); stroke-width: 0.5; fill-opacity: 0.85; cursor: pointer; }
 svg.chart .eq.sel { stroke: var(--chart-ink); stroke-width: 2; }
 svg.chart .atlas { cursor: pointer; }

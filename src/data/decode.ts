@@ -37,15 +37,18 @@ export function decodeQuakes(buf: ArrayBuffer, magTypes: string[] = []): Quakes 
 }
 
 export interface PlateMesh {
-  name: string; positions: Float32Array; depths: Float32Array; dip: Float32Array; dipAz: Float32Array; index: Uint32Array;
+  name: string; positions: Float32Array; depths: Float32Array; dip: Float32Array; dipAz: Float32Array;
+  /** slab thickness perpendicular to the slab (km) and 1-sigma depth uncertainty of the slab top (km), Slab2 thk/unc grids */
+  thk: Float32Array; unc: Float32Array; index: Uint32Array;
 }
 export function decodePlate(name: string, buf: ArrayBuffer, nv: number, nt: number): PlateMesh {
-  const want = nv * 24 + nt * 12;
+  const want = nv * 32 + nt * 12;
   if (buf.byteLength !== want) throw new Error(`${name}: ${buf.byteLength} bytes, expected ${want}`);
   return {
     name,
     positions: new Float32Array(buf, 0, nv * 3), depths: new Float32Array(buf, nv * 12, nv),
-    dip: new Float32Array(buf, nv * 16, nv), dipAz: new Float32Array(buf, nv * 20, nv), index: new Uint32Array(buf, nv * 24, nt * 3),
+    dip: new Float32Array(buf, nv * 16, nv), dipAz: new Float32Array(buf, nv * 20, nv),
+    thk: new Float32Array(buf, nv * 24, nv), unc: new Float32Array(buf, nv * 28, nv), index: new Uint32Array(buf, nv * 32, nt * 3),
   };
 }
 

@@ -2,7 +2,7 @@
 
 import type { Store } from '../core/store';
 import type { Data } from '../data/load';
-import type { Globe } from '../render3d/globe';
+import type { Globe, PlateHit } from '../render3d/globe';
 
 export const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector(sel) as T;
 export function el<K extends keyof HTMLElementTagNameMap>(tag: K, attrs: Record<string, string> = {}, ...kids: (Node | string | null | undefined | false)[]): HTMLElementTagNameMap[K] {
@@ -21,7 +21,7 @@ export interface Ctx {
   toast(msg: string): void;
   inspectSlab(abbr: string | null): void;
   inspectQuake(i: number): void;
-  inspectPlate(hit: { zone: string; depthKm: number; dip: number; dipAz: number; lon: number; lat: number }): void;
+  inspectPlate(hit: PlateHit): void;
   refreshAnalysis(): void;
 }
 

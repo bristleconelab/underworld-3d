@@ -9,7 +9,7 @@ const ab = (p: string) => { const b = readFileSync(p); return b.buffer.slice(b.b
 const sj = JSON.parse(readFileSync('public/data/slabs.json', 'utf8')) as { slabs: Slab[]; rateCheck: { abbr: string }[]; sourceSha256: string };
 const slabs = sj.slabs;
 const byAbbr = new Map(slabs.map((s) => [s.abbr, s]));
-const plates = JSON.parse(readFileSync('public/data/plates/index.json', 'utf8')) as { zones: { name: string; file: string; nv: number; nt: number; maxDepthKm: number }[]; atlas: Record<string, { zone: string; dipAz: number | null }> };
+const plates = JSON.parse(readFileSync('public/data/plates/index.json', 'utf8')) as { zones: { name: string; file: string; nv: number; nt: number; maxDepthKm: number; thkDefault: boolean }[]; atlas: Record<string, { zone: string; dipAz: number | null }> };
 const qmeta = JSON.parse(readFileSync('public/data/quakes.json', 'utf8'));
 
 describe('slabs.json (Atlas of the Underworld)', () => {
@@ -81,6 +81,17 @@ describe('plates (Slab2)', () => {
       for (let i = 0; i < m.dip.length; i += 37) { expect(m.dip[i]).toBeGreaterThanOrEqual(0); expect(m.dip[i]).toBeLessThan(90); }
       for (let i = 0; i < m.index.length; i++) expect(m.index[i]).toBeLessThan(z.nv);
     }
+  });
+  it('carries Slab2 thickness and depth uncertainty at every node', () => {
+    for (const z of plates.zones) {
+      const m = decodePlate(z.name, ab(`public/data/plates/${z.file}`), z.nv, z.nt);
+      for (let i = 0; i < z.nv; i++) {
+        expect(m.thk[i], z.name).toBeGreaterThanOrEqual(10); expect(m.thk[i], z.name).toBeLessThanOrEqual(250);
+        expect(m.unc[i], z.name).toBeGreaterThan(0); expect(m.unc[i], z.name).toBeLessThanOrEqual(100);
+      }
+      expect(z.thkDefault, z.name).toBe([...m.thk].every((t) => t === 100));
+    }
+    expect(plates.zones.filter((z) => z.thkDefault).map((z) => z.name).sort()).toEqual(['Halmahera', 'Himalaya', 'Hindu Kush', 'Pamir']);
   });
   it('cross-references Atlas slabs with plausible down-dip directions', () => {
     // Tonga-Kermadec dips west, Cascadia east, Java north, Mariana west

@@ -4,21 +4,38 @@
 import { R_KM, enu, fromXYZ, type Vec3 } from '../science/geodesy';
 import type { PlateMesh } from './decode';
 
-export interface SlabHit { zone: string; vertexDepth: number; dip: number; dipAz: number; /** signed km, + above the slab top (toward the surface), - below it */ distKm: number; horizKm: number }
+export interface SlabHit {
+  zone: string; vertexDepth: number; dip: number; dipAz: number;
+  /** signed km, + above the slab top (toward the surface), - below it */ distKm: number; horizKm: number;
+  thkKm: number; uncKm: number;
+}
+
+export type SlabRelation = 'top' | 'within' | 'above' | 'below';
+/** Where a hypocentre sits relative to the Slab2 slab: within 1 sigma of the slab top, inside the slab (down to its
+ *  thickness), above it (upper plate / mantle wedge) or beneath it. */
+export function slabRelation(h: SlabHit): SlabRelation {
+  if (Math.abs(h.distKm) <= h.uncKm) return 'top';
+  if (h.distKm > 0) return 'above';
+  return -h.distKm <= h.thkKm ? 'within' : 'below';
+}
+export const RELATION_LABEL: Record<SlabRelation, string> = {
+  top: 'at the slab top (within ±1σ): interface or uppermost slab', within: 'inside the slab (intraslab)',
+  above: 'above the slab top (upper plate or mantle wedge)', below: 'beneath the slab',
+};
 
 export class SlabIndex {
   private cells = new Map<string, number[]>();
-  private pts: Float32Array; private zone: Uint16Array; private depth: Float32Array; private dip: Float32Array; private dipAz: Float32Array;
+  private pts: Float32Array; private zone: Uint16Array; private depth: Float32Array; private dip: Float32Array; private dipAz: Float32Array; private thk: Float32Array; private unc: Float32Array;
   readonly zones: string[];
   constructor(meshes: PlateMesh[], private cellKm = 100) {
     const n = meshes.reduce((a, m) => a + m.depths.length, 0);
     this.pts = new Float32Array(n * 3); this.zone = new Uint16Array(n); this.depth = new Float32Array(n);
-    this.dip = new Float32Array(n); this.dipAz = new Float32Array(n); this.zones = meshes.map((m) => m.name);
+    this.dip = new Float32Array(n); this.dipAz = new Float32Array(n); this.thk = new Float32Array(n); this.unc = new Float32Array(n); this.zones = meshes.map((m) => m.name);
     let k = 0;
     meshes.forEach((m, zi) => {
       for (let i = 0; i < m.depths.length; i++, k++) {
         for (let c = 0; c < 3; c++) this.pts[k * 3 + c] = m.positions[i * 3 + c] * R_KM;
-        this.zone[k] = zi; this.depth[k] = m.depths[i]; this.dip[k] = m.dip[i]; this.dipAz[k] = m.dipAz[i];
+        this.zone[k] = zi; this.depth[k] = m.depths[i]; this.dip[k] = m.dip[i]; this.dipAz[k] = m.dipAz[i]; this.thk[k] = m.thk[i]; this.unc[k] = m.unc[i];
         const key = this.key(this.pts[k * 3], this.pts[k * 3 + 1], this.pts[k * 3 + 2]);
         let cell = this.cells.get(key); if (!cell) this.cells.set(key, (cell = [])); cell.push(k);
       }
@@ -50,6 +67,6 @@ export class SlabIndex {
     const nrm: Vec3 = [(east[0] * ne + north[0] * nn + up[0]) / len, (east[1] * ne + north[1] * nn + up[1]) / len, (east[2] * ne + north[2] * nn + up[2]) / len];
     const dx = x - vx, dy = y - vy, dz = z - vz;
     const signed = dx * nrm[0] + dy * nrm[1] + dz * nrm[2];
-    return { zone: this.zones[this.zone[best]], vertexDepth: this.depth[best], dip, dipAz: az, distKm: signed, horizKm: Math.sqrt(Math.max(0, bd - signed * signed)) };
+    return { zone: this.zones[this.zone[best]], vertexDepth: this.depth[best], dip, dipAz: az, distKm: signed, horizKm: Math.sqrt(Math.max(0, bd - signed * signed)), thkKm: this.thk[best], uncKm: this.unc[best] };
   }
 }

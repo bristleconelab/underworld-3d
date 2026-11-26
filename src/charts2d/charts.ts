@@ -12,7 +12,7 @@ import { axes, clip, frame, linear, log10, s } from './svg';
 export interface SectionData {
   halfLengthKm: number; halfWidthKm: number; az: number; ve: number;
   quakes: { i: number; x: number; depth: number; mag: number; off: number }[];
-  slab2: { x: number; depth: number }[];
+  slab2: { x: number; depth: number; thk: number; unc: number; dip: number }[];
   slabs: { slab: Slab; x: number; off: number }[];
   trenches: { x: number; cls: string; vel: number; div: number }[];
   aLabel: string; bLabel: string;
@@ -32,6 +32,9 @@ export function sectionChart(d: SectionData, W: number, H: number, sel: { slab?:
     g.append(s('line', { x1: f.m.l, x2: W - f.m.r, y1: y(b.depth), y2: y(b.depth), class: b.depth === 660 || b.depth === 2891 ? 'ref strong' : 'ref' }),
       s('text', { x: W - f.m.r - 4, y: y(b.depth) - 3, 'text-anchor': 'end', class: 'reflabel' }, b.name));
   }
+  // Slab2: slab body down to the vertical thickness thk / cos(dip) (exact for a locally planar slab), then the top's ±1σ
+  for (const p of d.slab2) if (p.dip < 80) g.append(s('line', { x1: x(p.x), x2: x(p.x), y1: y(p.depth), y2: y(p.depth + p.thk / Math.cos((p.dip * Math.PI) / 180)), class: 'slab2body' }));
+  for (const p of d.slab2) g.append(s('line', { x1: x(p.x), x2: x(p.x), y1: y(p.depth - p.unc), y2: y(p.depth + p.unc), class: 'slab2unc' }));
   for (const p of d.slab2) g.append(s('circle', { cx: x(p.x), cy: y(p.depth), r: 1.3, class: 'slab2pt', fill: css(VIRIDIS, p.depth / SLAB2_DEPTH_MAX) }));
   for (const t of d.trenches) {
     const c = BOUNDARY_COLORS[t.cls] ?? '#999';
@@ -120,7 +123,7 @@ export function ratesChart(slabs: Slab[], W: number, H: number, highlight: Set<s
 }
 
 // ---------- seismicity: depth histogram + Gutenberg-Richter ----------
-export function seismicityChart(depths: number[], mags: number[], types: string[], W: number, H: number, scope: string): SVGSVGElement {
+export function seismicityChart(depths: number[], mags: number[], types: string[], W: number, H: number, scope: string, relation?: string): SVGSVGElement {
   const f = frame(W, H, { l: 60, r: 16, t: 26, b: 40 }, 'Seismicity');
   const half = Math.floor((W - 30) / 2);
   const hist = histogram(depths, 0, 700, 25), maxC = Math.max(1, ...hist.counts);
@@ -144,6 +147,7 @@ export function seismicityChart(depths: number[], mags: number[], types: string[
   ];
   // header line over each panel; moment sum under the histogram title
   f.svg.append(s('text', { x: f.m.l, y: 11, class: 'tl head' }, txt[0]), s('text', { x: half + 60, y: 11, class: 'tl head' }, txt[1]), s('text', { x: f.m.l, y: 23, class: 'tl' }, txt[2]));
+  if (relation) f.svg.append(s('text', { x: half + 60, y: 23, class: 'tl' }, relation));
   return f.svg;
 }
 

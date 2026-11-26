@@ -39,6 +39,7 @@
       <ul class="toggles">
         <li><label><input type="checkbox" data-layer="slabs"><span class="sw sw-slab"></span>Atlas slabs (midpoint, top–base, ±error)</label></li>
         <li><label><input type="checkbox" data-layer="slab2"><span class="sw sw-viridis"></span>Slab2 slab-top surface</label></li>
+        <li class="sub"><label>Colour by <select id="s2c"><option value="depth">depth</option><option value="thk">thickness</option><option value="unc">depth uncertainty (1σ)</option></select></label></li>
         <li><label><input type="checkbox" data-layer="quakes"><span class="sw sw-plasma"></span>Earthquakes M≥5 (ComCat)</label></li>
         <li><label><input type="checkbox" data-layer="boundaries"><span class="sw sw-pb"></span>Plate boundaries (PB2002)</label></li>
         <li><label><input type="checkbox" data-layer="shells"><span class="sw sw-core"></span>410 / 660 / CMB / ICB</label></li>
@@ -89,7 +90,8 @@
     <details open><summary>Legend</summary>
       <div class="legend">
         <div class="cb"><span>Earthquake depth (km)</span><i class="bar plasma"></i><span class="ticks num"><b>0</b><b>350</b><b>700</b></span></div>
-        <div class="cb"><span>Slab2 slab-top depth (km)</span><i class="bar viridis"></i><span class="ticks num"><b>0</b><b>350</b><b>700</b></span></div>
+        <div class="cb" id="s2-legend"><span>Slab2 slab-top depth (km)</span><i class="bar viridis"></i><span class="ticks num"><b>0</b><b>350</b><b>700</b></span></div>
+        <p class="fine">2D section: Slab2 slab top (dots), ±1σ (grey bars), slab body to thk / cos(dip) (teal).</p>
         <div class="mags" id="mag-legend"><span>Magnitude (symbol area ∝ rupture radius)</span></div>
         <ul class="cats">
           <li><i style="background:var(--active)"></i>Active subduction (top at 0 km, 0 Ma)</li>
@@ -186,13 +188,13 @@
       <li><b>Atlas ages.</b> Base age = onset of subduction of the slab's oldest part, top age = end of subduction (0 Ma = ongoing). Both are ranges [young–old]. Sinking rate = depth ÷ mean age (km/Myr = mm/yr) under the Atlas's assumption of vertical sinking.</li>
       <li><b>Back-advection.</b> z(t) = max(0, z − v·t) for top and base with the Atlas rates. It moves slabs only vertically; plate motion and palaeogeography are not reconstructed, and the surface image stays present-day.</li>
       <li><b>Seismicity.</b> M₀ = 10^(1.5M + 9.1) N·m; b-value by maximum likelihood (Aki 1965, Utsu binning correction), Mc by maximum curvature + 0.2, σ after Shi &amp; Bolt (1982). mb and Ms saturate, so moment sums using them are lower bounds; the share of Mw-type magnitudes is reported.</li>
-      <li><b>Distance to Slab2.</b> Signed distance from the nearest Slab2 node's tangent plane (positive above the slab top). Slab2 is thinned to 0.2°; dip and down-dip azimuth are computed from the depth gradient.</li>
+      <li><b>Distance to Slab2.</b> Signed distance from the nearest Slab2 node's tangent plane (positive above the slab top). An event within that node's 1σ depth uncertainty is “at the slab top”; deeper than that but within the Slab2 thickness, “inside the slab”. Slab2 is thinned to 0.2°; dip and down-dip azimuth are computed from the depth gradient.</li>
       <li><b>PREM.</b> Dziewonski &amp; Anderson (1981), isotropic; gravity and pressure integrated from density (centre 364 GPa, CMB 135.8 GPa).</li>
     </ul>
     <h3>Data</h3>
     <ul class="sources">
       <li>Slabs: <a href="https://doi.org/10.1016/j.tecto.2017.10.004">van der Meer, van Hinsbergen &amp; Spakman (2018)</a>, Tectonophysics 723 (CC BY 4.0), 2019 table from <a href="https://www.atlas-of-the-underworld.org">atlas-of-the-underworld.org</a>.</li>
-      <li>Slab-top geometry: <a href="https://doi.org/10.5066/F7PV6JNV">Slab2, Hayes (2018)</a>, USGS (public domain). Thickness and uncertainty grids are not included.</li>
+      <li>Slab-top geometry, thickness and depth uncertainty: <a href="https://doi.org/10.5066/F7PV6JNV">Slab2, Hayes (2018)</a>, USGS (public domain). Pamir, Himalaya, Halmahera and Hindu Kush carry Slab2's default thickness of 100 km.</li>
       <li>Earthquakes: <a href="https://earthquake.usgs.gov/fdsnws/event/1/">USGS ComCat</a> (public domain), M≥5 since 1973, <span id="about-quakes"></span>.</li>
       <li>Plate boundaries and relative velocities: <a href="https://doi.org/10.1029/2001GC000252">Bird (2003) PB2002</a>, GeoJSON by H. Ahlenius (<a href="https://github.com/fraxen/tectonicplates">fraxen/tectonicplates</a>, ODC-BY 1.0).</li>
       <li>Surface: NASA Blue Marble through <a href="https://earthdata.nasa.gov/gibs">GIBS</a> (public domain).</li>

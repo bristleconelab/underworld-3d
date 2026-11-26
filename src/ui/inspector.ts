@@ -2,6 +2,8 @@
 
 import { fmt, isoUtc, latlon, pm, range, sci } from '../core/format';
 import { quakeIds } from '../data/load';
+import { RELATION_LABEL, slabRelation } from '../data/spatial';
+import type { PlateHit } from '../render3d/globe';
 import { compass, toXYZ } from '../science/geodesy';
 import { prem } from '../science/prem';
 import { isMomentMagnitude, momentFromMw } from '../science/seismology';
@@ -85,7 +87,8 @@ export async function quakeCard(ctx: Ctx, i: number) {
     ['Depth', Number.isFinite(q.depthErr[i]) ? pm(q.depth[i], q.depthErr[i], 'km', 1) : `${fmt(q.depth[i], 1)} km (error not reported)`],
     ['Magnitude', `${q.mag[i].toFixed(1)} ${t}${sat}`],
     ['Seismic moment', `${sci(momentFromMw(q.mag[i]))} N·m${isMomentMagnitude(t) ? '' : ' (from a non-Mw magnitude: indicative)'}`],
-    ['Slab2', near ? `${near.zone}: ${near.distKm >= 0 ? '+' : ''}${fmt(near.distKm)} km from slab top (${near.distKm >= 0 ? 'above' : 'below'}), local dip ${fmt(near.dip)}°` : 'no Slab2 surface within 150 km'],
+    ['Slab2', near ? `${near.zone}: ${near.distKm >= 0 ? '+' : ''}${fmt(near.distKm)} km from the slab top; top σ ±${fmt(near.uncKm)} km, slab ${fmt(near.thkKm)} km thick${ctx.data.thkDefault.has(near.zone) ? ' (Slab2 default)' : ''}, dip ${fmt(near.dip)}°` : 'no Slab2 surface within 150 km'],
+    ['Position', near ? RELATION_LABEL[slabRelation(near)] : '–'],
     ['PREM at depth', `P ${fmt(p.pGPa, 1)} GPa · Vp ${fmt(p.vp, 2)} · Vs ${fmt(p.vs, 2)} km/s`],
     ['USGS event', 'loading id…'],
   ];
@@ -98,11 +101,14 @@ export async function quakeCard(ctx: Ctx, i: number) {
   } catch { /* the id file is optional */ }
 }
 
-export function plateCard(ctx: Ctx, h: { zone: string; depthKm: number; dip: number; dipAz: number; lon: number; lat: number }) {
+export function plateCard(ctx: Ctx, h: PlateHit) {
   const p = prem(h.depthKm);
   const linked = Object.entries(ctx.data.crossref).filter(([, x]) => x.zone === h.zone).map(([a]) => a);
   const rows: [string, string | Node][] = [
     ['Point', `${latlon(h.lat, h.lon, 2)} · ${fmt(h.depthKm)} km`],
+    ['Slab-top depth σ', `± ${fmt(h.uncKm, 1)} km (1σ, Slab2 unc)`],
+    ['Slab thickness', `${fmt(h.thkKm, 1)} km${h.thkDefault ? ' (Slab2 default 100 km: no age-based estimate for this zone)' : ' (perpendicular to the slab, Slab2 thk)'}`],
+    ['Vertical thickness', h.dip < 80 ? `${fmt(h.thkKm / Math.cos((h.dip * Math.PI) / 180))} km at this dip` : '–'],
     ['Dip', `${fmt(h.dip, 1)}°`],
     ['Down-dip azimuth', h.dipAz >= 0 ? `${fmt(h.dipAz)}° (${compass(h.dipAz)}); strike ${fmt((h.dipAz + 270) % 360)}°` : 'undefined (flat)'],
     ['PREM', `P ${fmt(p.pGPa, 1)} GPa · ρ ${fmt(p.rho, 2)} g/cm³ · Vp ${fmt(p.vp, 2)} km/s`],
@@ -110,5 +116,5 @@ export function plateCard(ctx: Ctx, h: { zone: string; depthKm: number; dip: num
   const links = el('p', { class: 'fine' }, linked.length ? 'Atlas slabs linked to this zone: ' : 'No Atlas slab linked to this zone.');
   for (const a of linked) { const b = el('button', { class: 'link' }, a); b.addEventListener('click', () => ctx.inspectSlab(a)); links.append(b, ' '); }
   openInspector(ctx, h.zone, 'Slab2 slab-top surface', [table(rows), links,
-    el('p', { class: 'fine src' }, 'Source: Slab2 (Hayes 2018, public domain), thinned to 0.2°. Dip and azimuth from the depth gradient at the nearest node; Slab2 thickness and uncertainty grids are not loaded.')]);
+    el('p', { class: 'fine src' }, 'Source: Slab2 (Hayes 2018, public domain) depth, thickness and uncertainty grids, thinned to 0.2°. Dip and azimuth from the depth gradient at the nearest node.')]);
 }
